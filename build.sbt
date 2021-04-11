@@ -2,14 +2,12 @@ import Dependencies.{ io, _ }
 import Util._
 
 ThisBuild / organization := "dev.insideyou"
-ThisBuild / scalaVersion := "2.13.5"
+ThisBuild / scalaVersion := "3.0.0"
 
 lazy val `todo` =
   project
     .in(file("."))
     .aggregate(
-      util,
-      domain,
       core,
       delivery,
       `delivery-http-http4s`,
@@ -18,12 +16,12 @@ lazy val `todo` =
       main,
       `main-http-http4s`,
       `main-postgres-skunk`,
-      `main-http-http4s-postgres-skunk`
+      `main-http-http4s-postgres-skunk`,
     )
 
-lazy val util =
+lazy val core =
   project
-    .in(file("00-util"))
+    .in(file("01-core"))
     .settings(commonSettings)
     .settings(commonDependencies)
     .settings(
@@ -32,33 +30,9 @@ lazy val util =
       )
     )
 
-lazy val domain =
-  project
-    .in(file("01-domain"))
-    .dependsOn(util % Cctt)
-    .settings(commonSettings)
-
-lazy val core =
-  project
-    .in(file("02-core"))
-    .dependsOn(domain % Cctt)
-    .settings(commonSettings)
-    .settings(
-      libraryDependencies ++= Seq(
-        org.typelevel.`cats-core`
-      ),
-      libraryDependencies ++= Seq(
-        com.github.alexarchambault.`scalacheck-shapeless_1.14`,
-        org.scalacheck.scalacheck,
-        org.scalatest.scalatest,
-        org.scalatestplus.`scalacheck-1-14`,
-        org.typelevel.`discipline-scalatest`
-      ).map(_ % Test)
-    )
-
 lazy val delivery =
   project
-    .in(file("03-delivery"))
+    .in(file("02-delivery"))
     .dependsOn(core % Cctt)
     .settings(commonSettings)
     .settings(
@@ -69,7 +43,7 @@ lazy val delivery =
 
 lazy val `delivery-http-http4s` =
   project
-    .in(file("03-delivery-http-http4s"))
+    .in(file("02-delivery-http-http4s"))
     .dependsOn(core % Cctt)
     .settings(commonSettings)
     .settings(
@@ -78,13 +52,14 @@ lazy val `delivery-http-http4s` =
         org.http4s.`http4s-blaze-server`,
         org.http4s.`http4s-circe`,
         org.http4s.`http4s-dsl`,
-        org.typelevel.`cats-effect`
+        org.slf4j.`slf4j-simple`,
+        org.typelevel.`cats-effect`,
       )
     )
 
 lazy val persistence =
   project
-    .in(file("03-persistence"))
+    .in(file("02-persistence"))
     .dependsOn(core % Cctt)
     .settings(commonSettings)
     .settings(
@@ -95,19 +70,19 @@ lazy val persistence =
 
 lazy val `persistence-postgres-skunk` =
   project
-    .in(file("03-persistence-postgres-skunk"))
+    .in(file("02-persistence-postgres-skunk"))
     .dependsOn(core % Cctt)
     .settings(commonSettings)
     .settings(
       libraryDependencies ++= Seq(
         org.tpolecat.`skunk-core`,
-        org.typelevel.`cats-effect`
+        org.typelevel.`cats-effect`,
       )
     )
 
 lazy val main =
   project
-    .in(file("04-main"))
+    .in(file("03-main"))
     .dependsOn(delivery % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
@@ -115,20 +90,15 @@ lazy val main =
 
 lazy val `main-http-http4s` =
   project
-    .in(file("04-main-http-http4s"))
+    .in(file("03-main-http-http4s"))
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
     .settings(libraryDependencies ++= effects)
-    .settings(
-      libraryDependencies ++= Seq(
-        org.slf4j.`slf4j-simple`
-      )
-    )
 
 lazy val `main-postgres-skunk` =
   project
-    .in(file("04-main-postgres-skunk"))
+    .in(file("03-main-postgres-skunk"))
     .dependsOn(delivery % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)
@@ -136,47 +106,30 @@ lazy val `main-postgres-skunk` =
 
 lazy val `main-http-http4s-postgres-skunk` =
   project
-    .in(file("04-main-http-http4s-postgres-skunk"))
+    .in(file("03-main-http-http4s-postgres-skunk"))
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)
     .settings(libraryDependencies ++= effects)
-    .settings(
-      libraryDependencies ++= Seq(
-        org.slf4j.`slf4j-simple`
-      )
-    )
-
 
 lazy val commonSettings = Seq(
-  addCompilerPlugin(com.olegpy.`better-monadic-for`),
-  addCompilerPlugin(org.augustjune.`context-applied`),
-  addCompilerPlugin(org.typelevel.`kind-projector`),
   update / evictionWarningOptions := EvictionWarningOptions.empty,
-  Compile / console / scalacOptions := {
-    (Compile / console / scalacOptions)
-      .value
-      .filterNot(_.contains("wartremover"))
-      .filterNot(Scalac.Lint.toSet)
-      .filterNot(Scalac.FatalWarnings.toSet) :+ "-Wconf:any:silent"
-  },
   Test / console / scalacOptions :=
     (Compile / console / scalacOptions).value,
 )
 
 lazy val commonDependencies = Seq(
   libraryDependencies ++= Seq(
-    com.github.alexarchambault.`scalacheck-shapeless_1.14`,
     org.scalacheck.scalacheck,
     org.scalatest.scalatest,
-    org.scalatestplus.`scalacheck-1-14`,
+    org.scalatestplus.`scalacheck-1-15`,
     org.typelevel.`discipline-scalatest`,
-  ).map(_ % Test),
+  ).map(_ % Test)
 )
 
 lazy val effects = Seq(
   dev.zio.`zio-interop-cats`,
   dev.zio.zio,
-  io.monix.`monix-eval`,
-  org.typelevel.`cats-effect`
+  // io.monix.`monix-eval`,
+  org.typelevel.`cats-effect`,
 )

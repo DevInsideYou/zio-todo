@@ -3,30 +3,20 @@ import sbt._
 object Dependencies {
   case object com {
     case object github {
-      case object alexarchambault {
-        val `scalacheck-shapeless_1.14` =
-          "com.github.alexarchambault" %% "scalacheck-shapeless_1.14" % "1.2.5"
-      }
-
       case object liancheng {
         val `organize-imports` =
           "com.github.liancheng" %% "organize-imports" % "0.5.0"
       }
-    }
-
-    case object olegpy {
-      val `better-monadic-for` =
-        "com.olegpy" %% "better-monadic-for" % "0.3.1"
     }
   }
 
   case object dev {
     case object zio {
       val zio =
-        "dev.zio" %% "zio" % "1.0.3"
+        "dev.zio" %% "zio" % "1.0.9"
 
       val `zio-interop-cats` =
-        "dev.zio" %% "zio-interop-cats" % "2.2.0.1"
+        "dev.zio" %% "zio-interop-cats" % "3.1.1.0"
     }
   }
 
@@ -36,7 +26,7 @@ object Dependencies {
         dependency("generic")
 
       private def dependency(artifact: String): ModuleID =
-        "io.circe" %% s"circe-$artifact" % "0.13.0"
+        "io.circe" %% s"circe-$artifact" % "0.14.1"
     }
 
     case object monix {
@@ -46,11 +36,6 @@ object Dependencies {
   }
 
   case object org {
-    case object augustjune {
-      val `context-applied` =
-        "org.augustjune" %% "context-applied" % "0.1.4"
-    }
-
     case object http4s {
       val `http4s-blaze-server` =
         dependency("blaze-server")
@@ -62,46 +47,43 @@ object Dependencies {
         dependency("dsl")
 
       private def dependency(artifact: String): ModuleID =
-        "org.http4s" %% s"http4s-$artifact" % "0.21.13"
+        "org.http4s" %% s"http4s-$artifact" % "1.0.0-M23"
     }
 
     case object scalacheck {
       val scalacheck =
-        "org.scalacheck" %% "scalacheck" % "1.15.1"
+        "org.scalacheck" %% "scalacheck" % "1.15.4"
     }
 
     case object scalatest {
       val scalatest =
-        "org.scalatest" %% "scalatest" % "3.2.3"
+        "org.scalatest" %% "scalatest" % "3.2.9"
     }
 
     case object scalatestplus {
-      val `scalacheck-1-14` =
-        "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0"
+      val `scalacheck-1-15` =
+        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0"
     }
 
     case object slf4j {
       val `slf4j-simple` =
-        "org.slf4j" % "slf4j-simple" % "1.7.30"
+        "org.slf4j" % "slf4j-simple" % "1.7.31"
     }
 
     case object tpolecat {
       val `skunk-core` =
-        "org.tpolecat" %% "skunk-core" % "0.0.21"
+        "org.tpolecat" %% "skunk-core" % "0.2.0"
     }
 
     case object typelevel {
       val `cats-core` =
-        "org.typelevel" %% "cats-core" % "2.3.0"
+        "org.typelevel" %% "cats-core" % "2.6.1"
 
       val `cats-effect` =
-        "org.typelevel" %% "cats-effect" % "2.2.0"
+        "org.typelevel" %% "cats-effect" % "3.1.1"
 
       val `discipline-scalatest` =
-        "org.typelevel" %% "discipline-scalatest" % "2.1.0"
-
-      val `kind-projector` =
-        "org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.full
+        "org.typelevel" %% "discipline-scalatest" % "2.1.5"
     }
   }
 }

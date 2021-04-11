@@ -8,6 +8,8 @@ Global / excludeLintKeys ++= Set(
   evictionWarningOptions,
 )
 
+ThisBuild / evictionErrorLevel := Level.Warn
+
 Test / parallelExecution := false
 Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oSD")
 Test / turbo := true
