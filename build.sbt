@@ -9,6 +9,7 @@ lazy val `todo` =
     .in(file("."))
     .aggregate(
       core,
+      `custom-zio-interop-cats`,
       delivery,
       `delivery-http-http4s`,
       persistence,
@@ -31,6 +32,16 @@ lazy val core =
       )
     )
 
+lazy val `custom-zio-interop-cats` =
+  project
+    .in(file("01-custom-zio-interop-cats"))
+    .settings(commonSettings)
+    .settings(
+      libraryDependencies ++= Seq(
+        dev.zio.`zio-interop-cats`
+      )
+    )
+
 lazy val delivery =
   project
     .in(file("02-delivery"))
@@ -46,6 +57,7 @@ lazy val `delivery-http-http4s` =
   project
     .in(file("02-delivery-http-http4s"))
     .dependsOn(core % Cctt)
+    .dependsOn(`custom-zio-interop-cats` % Cctt)
     .settings(commonSettings)
     .settings(
       libraryDependencies ++= Seq(
@@ -73,6 +85,7 @@ lazy val `persistence-postgres-skunk` =
   project
     .in(file("02-persistence-postgres-skunk"))
     .dependsOn(core % Cctt)
+    .dependsOn(`custom-zio-interop-cats` % Cctt)
     .settings(commonSettings)
     .settings(
       libraryDependencies ++= Seq(
