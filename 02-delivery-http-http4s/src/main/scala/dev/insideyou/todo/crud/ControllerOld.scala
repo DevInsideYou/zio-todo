@@ -2,6 +2,7 @@ package dev.insideyou
 package todo
 package crud
 
+import cats.*
 import cats.data.NonEmptyChain
 import io.circe.*
 import io.circe.generic.semiauto.*
@@ -10,18 +11,18 @@ import org.http4s.*
 import org.http4s.circe.*
 import org.http4s.dsl.Http4sDsl
 import org.http4s.server.Router
-import zio.*
 
-object Controller:
-  def make[TodoId](
+object ControllerOld:
+  def make[F[_], TodoId](
       pattern: DateTimeFormatter,
-      boundary: Boundary[TodoId, ZEnv, Throwable],
+      boundary: BoundaryOld[F, TodoId],
     )(using
-      parse: Parse[String, TodoId]
-    ): UIO[Controller] =
-    ZIO.succeed {
-      new Controller with Http4sDsl[Z]:
-        override lazy val routes: HttpRoutes[Z] =
+      A: effect.Async[F],
+      parse: Parse[String, TodoId],
+    ): F[ControllerOld[F]] =
+    A.delay {
+      new ControllerOld[F] with Http4sDsl[F]:
+        override lazy val routes: HttpRoutes[F] =
           Router {
             "todos" -> HttpRoutes.of {
               case r @ POST -> Root     => r.as[request.Todo.Create].flatMap(create)
@@ -38,7 +39,7 @@ object Controller:
 
         object Description extends QueryParamDecoderMatcher[String]("description")
 
-        private def create(payload: request.Todo.Create): Z[ZResponse] =
+        private def create(payload: request.Todo.Create): F[Response[F]] =
           withDeadlinePrompt(payload.deadline) { deadline =>
             boundary
               .createOne(Todo.Data(payload.description, deadline))
@@ -50,8 +51,8 @@ object Controller:
         private def withDeadlinePrompt(
             deadline: String
           )(
-            onSuccess: LocalDateTime => Z[ZResponse]
-          ): Z[ZResponse] =
+            onSuccess: LocalDateTime => F[Response[F]]
+          ): F[Response[F]] =
           toLocalDateTime(deadline).fold(BadRequest(_), onSuccess)
 
         private def toLocalDateTime(input: String): Either[String, LocalDateTime] =
@@ -67,10 +68,10 @@ object Controller:
               s"$trimmedInput does not match the required format $DeadlinePromptPattern."
             }
 
-        private def update(id: String): request.Todo.Update => Z[ZResponse] =
+        private def update(id: String): request.Todo.Update => F[Response[F]] =
           _.fold(updateDescription(id), updateDeadline(id), updateAllFields(id))
 
-        private def updateDescription(id: String)(description: String): Z[ZResponse] =
+        private def updateDescription(id: String)(description: String): F[Response[F]] =
           withIdPrompt(id) { id =>
             withReadOne(id) { todo =>
               boundary
@@ -81,7 +82,7 @@ object Controller:
             }
           }
 
-        private def updateDeadline(id: String)(deadline: String): Z[ZResponse] =
+        private def updateDeadline(id: String)(deadline: String): F[Response[F]] =
           withIdPrompt(id) { id =>
             withDeadlinePrompt(deadline) { deadline =>
               withReadOne(id) { todo =>
@@ -99,7 +100,7 @@ object Controller:
           )(
             description: String,
             deadline: String,
-          ): Z[ZResponse] =
+          ): F[Response[F]] =
           (
             toId(id).toEitherNec,
             toLocalDateTime(deadline).toEitherNec,
@@ -114,7 +115,7 @@ object Controller:
           )(
             id: TodoId,
             deadline: LocalDateTime,
-          ): Z[ZResponse] =
+          ): F[Response[F]] =
           withReadOne(id) { todo =>
             boundary
               .updateOne(
@@ -127,7 +128,7 @@ object Controller:
               .flatMap(Ok(_))
           }
 
-        private lazy val showAll: Z[ZResponse] =
+        private lazy val showAll: F[Response[F]] =
           boundary.readAll.flatMap { todos =>
             todos
               .sortBy(_.deadline)
@@ -136,7 +137,7 @@ object Controller:
               .pipe(Ok(_))
           }
 
-        private def searchById(id: String): Z[ZResponse] =
+        private def searchById(id: String): F[Response[F]] =
           withIdPrompt(id) { id =>
             withReadOne(id) { todo =>
               todo
@@ -146,7 +147,7 @@ object Controller:
             }
           }
 
-        private def searchByDescription(description: String): Z[ZResponse] =
+        private def searchByDescription(description: String): F[Response[F]] =
           boundary.readManyByPartialDescription(description).flatMap { todos =>
             todos
               .map(response.Todo(pattern))
@@ -154,7 +155,7 @@ object Controller:
               .pipe(Ok(_))
           }
 
-        private def delete(id: String): Z[ZResponse] =
+        private def delete(id: String): F[Response[F]] =
           withIdPrompt(id) { id =>
             withReadOne(id) { todo =>
               boundary.deleteOne(todo) >>
@@ -162,7 +163,7 @@ object Controller:
             }
           }
 
-        private def withIdPrompt(id: String)(onValidId: TodoId => Z[ZResponse]): Z[ZResponse] =
+        private def withIdPrompt(id: String)(onValidId: TodoId => F[Response[F]]): F[Response[F]] =
           toId(id).fold(BadRequest(_), onValidId)
 
         private def toId(userInput: String): Either[String, TodoId] =
@@ -171,16 +172,16 @@ object Controller:
         private def withReadOne(
             id: TodoId
           )(
-            onFound: Todo.Existing[TodoId] => Z[ZResponse]
-          ): Z[ZResponse] =
+            onFound: Todo.Existing[TodoId] => F[Response[F]]
+          ): F[Response[F]] =
           boundary
             .readOneById(id)
             .flatMap(_.fold(displayNoTodosFoundMessage)(onFound))
 
-        private lazy val displayNoTodosFoundMessage: Z[ZResponse] =
+        private lazy val displayNoTodosFoundMessage: F[Response[F]] =
           NotFound("No todos found!")
 
-        private lazy val deleteAll: Z[ZResponse] =
+        private lazy val deleteAll: F[Response[F]] =
           boundary.deleteAll >> NoContent()
     }
 
@@ -192,7 +193,7 @@ object Controller:
       given Decoder[Create] =
         deriveDecoder
 
-      given EntityDecoder[Z, Create] =
+      given [F[_]: effect.Concurrent]: EntityDecoder[F, Create] =
         jsonOf
 
       enum Update:
@@ -218,7 +219,7 @@ object Controller:
             deriveDecoder[Deadline].widen,
           ).reduceLeft(_ `or` _)
 
-        given EntityDecoder[Z, Update] =
+        given [F[_]: effect.Concurrent]: EntityDecoder[F, Update] =
           jsonOf
 
   private lazy val DeadlinePromptPattern: String =

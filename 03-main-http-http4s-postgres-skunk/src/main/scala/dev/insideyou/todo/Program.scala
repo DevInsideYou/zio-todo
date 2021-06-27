@@ -10,8 +10,8 @@ object Program:
     SessionPoolOld.make.use { resource =>
       for
         controller <- crud.DependencyGraph.make(Pattern, resource)
-        server <- Server.make(executionContext) {
-          HttpApp.make(
+        server <- ServerOld.make(executionContext) {
+          HttpAppOld.make(
             controller
           )
         }

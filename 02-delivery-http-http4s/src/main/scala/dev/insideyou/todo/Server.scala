@@ -3,28 +3,26 @@ package todo
 
 import scala.concurrent.*
 
-import cats.*
 import org.http4s.*
 import org.http4s.blaze.server.BlazeServerBuilder
+import zio.*
 
-trait Server[F[_]]:
-  def serve: F[Unit]
+trait Server[-R, +E]:
+  def serve: ZIO[R, E, Unit]
 
 object Server:
-  def make[F[_]](
-      executionContext: ExecutionContext
-    )(
-      httpApp: HttpApp[F]
-    )(using
-      A: effect.Async[F]
-    ): F[Server[F]] =
-    A.delay {
+  def make(
+      httpApp: HttpApp[Z]
+    ): UIO[Server[ZEnv, Throwable]] =
+    ZIO.succeed {
       new:
-        override lazy val serve: F[Unit] =
-          BlazeServerBuilder(executionContext)
-            .bindHttp()
-            .withHttpApp(httpApp)
-            .serve
-            .compile
-            .drain
+        override lazy val serve: Z[Unit] =
+          ZIO.runtime.flatMap { runtime =>
+            BlazeServerBuilder(executionContext = runtime.platform.executor.asEC)
+              .bindHttp()
+              .withHttpApp(httpApp)
+              .serve
+              .compile
+              .drain
+          }
     }

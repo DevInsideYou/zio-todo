@@ -9,8 +9,8 @@ object Program:
   def make[F[_]: effect.Async](executionContext: ExecutionContext): F[Unit] =
     for
       controller <- crud.DependencyGraph.make(Pattern)
-      server <- Server.make(executionContext) {
-        HttpApp.make(
+      server <- ServerOld.make(executionContext) {
+        HttpAppOld.make(
           controller
         )
       }
