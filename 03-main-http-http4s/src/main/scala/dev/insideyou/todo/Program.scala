@@ -1,16 +1,12 @@
 package dev.insideyou
 package todo
 
-import scala.concurrent.*
-
-import cats.*
-
 object Program:
-  def make[F[_]: effect.Async](executionContext: ExecutionContext): F[Unit] =
+  lazy val make: Z[Unit] =
     for
       controller <- crud.DependencyGraph.make(Pattern)
-      server <- ServerOld.make(executionContext) {
-        HttpAppOld.make(
+      server <- Server.make {
+        HttpApp.make(
           controller
         )
       }

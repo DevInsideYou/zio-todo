@@ -2,16 +2,15 @@ package dev.insideyou
 package todo
 package crud
 
-import cats.*
-import cats.effect.Ref
+import zio.*
 
 object DependencyGraph:
-  def make[F[_]: effect.Async](pattern: DateTimeFormatter): F[ControllerOld[F]] =
-    Ref.of[F, Vector[Todo.Existing[Int]]](Vector.empty).flatMap { state =>
-      ControllerOld.make(
+  def make(pattern: DateTimeFormatter): UIO[Controller] =
+    Ref.make(Vector.empty[Todo.Existing[Int]]).flatMap { state =>
+      Controller.make(
         pattern = pattern,
-        boundary = BoundaryOld.make(
-          gateway = InMemoryEntityGatewayOld.make(state)
+        boundary = Boundary.make(
+          gateway = InMemoryEntityGateway.make(state)
         ),
       )
     }
