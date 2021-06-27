@@ -2,20 +2,20 @@ package dev.insideyou
 package todo
 package crud
 
-import cats.*
+import zio.*
 
 object DependencyGraph:
-  def make[F[_]: effect.Sync](
+  def make(
       pattern: DateTimeFormatter,
-      console: ConsoleOld[F],
-      random: RandomOld[F],
-      resource: effect.Resource[F, skunk.Session[F]],
-    ): F[ControllerOld[F]] =
-    PostgresEntityGatewayOld.make(resource).map { gateway =>
-      ControllerOld.make(
+      console: Console[Any, Nothing],
+      random: Random[Any, Nothing],
+      resource: RManaged[ZEnv, skunk.Session[Z]],
+    ): UIO[Controller[ZEnv, Nothing]] =
+    PostgresEntityGateway.make(resource).map { gateway =>
+      Controller.make(
         pattern = pattern,
-        boundary = BoundaryOld.make(gateway),
-        console = FancyConsoleOld.make(console),
+        boundary = Boundary.make(gateway),
+        console = FancyConsole.make(console),
         random = random,
       )
     }

@@ -4,11 +4,11 @@ package todo
 import cats.effect.*
 
 object Program:
-  def make[F[_]: Async: std.Console: natchez.Trace]: F[Unit] =
-    SessionPoolOld.make.use { resource =>
+  lazy val make: Z[Unit] =
+    SessionPool.make.use { resource =>
       for
-        console <- ConsoleOld.make
-        random <- RandomOld.make
+        console <- Console.make
+        random <- Random.make
         controller <-
           crud.DependencyGraph.make(Pattern, console, random, resource)
         _ <- controller.program
