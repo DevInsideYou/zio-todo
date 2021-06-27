@@ -1,23 +1,23 @@
 package dev.insideyou
 package todo
 
-import cats.*
+import zio.*
 
-trait Console[F[_]]:
-  def getStrLnWithPrompt(prompt: String): F[String]
-  def putStrLn(line: String): F[Unit]
-  def putErrLn(line: String): F[Unit]
+trait Console[-R, +E]:
+  def getStrLnWithPrompt(prompt: String): ZIO[R, E, String]
+  def putStrLn(line: String): ZIO[R, E, Unit]
+  def putErrLn(line: String): ZIO[R, E, Unit]
 
 object Console:
-  def make[F[_]](using S: effect.Sync[F]): F[Console[F]] =
-    S.delay {
+  lazy val make: UIO[Console[Any, Nothing]] =
+    ZIO.succeed {
       new:
-        override def getStrLnWithPrompt(prompt: String): F[String] =
-          S.delay(scala.io.StdIn.readLine(prompt))
+        override def getStrLnWithPrompt(prompt: String): UIO[String] =
+          ZIO.succeed(scala.io.StdIn.readLine(prompt))
 
-        override def putStrLn(line: String): F[Unit] =
-          S.delay(println(line))
+        override def putStrLn(line: String): UIO[Unit] =
+          ZIO.succeed(println(line))
 
-        override def putErrLn(line: String): F[Unit] =
-          S.delay(scala.Console.err.println(line))
+        override def putErrLn(line: String): UIO[Unit] =
+          ZIO.succeed(scala.Console.err.println(line))
     }

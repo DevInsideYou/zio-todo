@@ -6,8 +6,8 @@ import cats.*
 object Program:
   def make[F[_]: effect.Sync]: F[Unit] =
     for
-      console <- Console.make
-      random <- Random.make
+      console <- ConsoleOld.make
+      random <- RandomOld.make
       controller <- crud.DependencyGraph.make(Pattern, console, random)
       _ <- controller.program
     yield ()

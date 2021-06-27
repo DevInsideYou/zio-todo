@@ -1,15 +1,15 @@
 package dev.insideyou
 package todo
 
-import cats.*
+import zio.*
 
-trait Random[F[_]]:
-  def nextInt(n: Int): F[Int]
+trait Random[-R, +E]:
+  def nextInt(n: Int): ZIO[R, E, Int]
 
 object Random:
-  def make[F[_]](using S: effect.Sync[F]): F[Random[F]] =
-    S.delay {
+  lazy val make: UIO[Random[Any, Nothing]] =
+    ZIO.succeed {
       new:
-        override def nextInt(n: Int): F[Int] =
-          S.delay(scala.util.Random.nextInt(n))
+        override def nextInt(n: Int): UIO[Int] =
+          ZIO.succeed(scala.util.Random.nextInt(n))
     }

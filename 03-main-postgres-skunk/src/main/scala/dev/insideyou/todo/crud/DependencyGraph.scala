@@ -7,15 +7,15 @@ import cats.*
 object DependencyGraph:
   def make[F[_]: effect.Sync](
       pattern: DateTimeFormatter,
-      console: Console[F],
-      random: Random[F],
+      console: ConsoleOld[F],
+      random: RandomOld[F],
       resource: effect.Resource[F, skunk.Session[F]],
-    ): F[Controller[F]] =
+    ): F[ControllerOld[F]] =
     PostgresEntityGateway.make(resource).map { gateway =>
-      Controller.make(
+      ControllerOld.make(
         pattern = pattern,
         boundary = BoundaryOld.make(gateway),
-        console = FancyConsole.make(console),
+        console = FancyConsoleOld.make(console),
         random = random,
       )
     }

@@ -4,19 +4,14 @@ package crud
 
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME as Pattern
 
-import cats.*
-import cats.effect.Ref
-import cats.effect.unsafe.implicits.global
+import zio.*
 
 final class ControllerSuite extends TestSuite:
   import ControllerSuite.{ *, given }
 
-  private type F[+A] = effect.IO[A]
-  private val F = effect.IO
-
   test("test suite should quit automatically") {
-    val boundary: BoundaryOld[F, Unit] =
-      new FakeBoundary[F, Unit]
+    val boundary: Boundary[Unit, Any, Throwable] =
+      new FakeBoundary[Unit]
 
     assert(
       boundary,
@@ -26,10 +21,10 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should create on 'c'") {
-    val boundary: BoundaryOld[F, Unit] =
-      new FakeBoundary[F, Unit]:
-        override def createOne(todo: Todo.Data): F[Todo.Existing[Unit]] =
-          F.pure(Todo.Existing((), todo))
+    val boundary: Boundary[Unit, Any, Throwable] =
+      new FakeBoundary[Unit]:
+        override def createOne(todo: Todo.Data): Task[Todo.Existing[Unit]] =
+          ZIO.succeed(Todo.Existing((), todo))
 
     assert(
       boundary,
@@ -39,10 +34,10 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should keep running on error") {
-    val boundary: BoundaryOld[F, Unit] =
-      new FakeBoundary[F, Unit]:
-        override def createOne(todo: Todo.Data): F[Todo.Existing[Unit]] =
-          F.raiseError(RuntimeException("boom"))
+    val boundary: Boundary[Unit, Any, Throwable] =
+      new FakeBoundary[Unit]:
+        override def createOne(todo: Todo.Data): Task[Todo.Existing[Unit]] =
+          ZIO.fail(RuntimeException("boom"))
 
     forAll { (description: String) =>
       assert(
@@ -55,8 +50,8 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should yield an error if deadline does not match the required format") {
-    val boundary: BoundaryOld[F, Unit] =
-      new FakeBoundary[F, Unit]
+    val boundary: Boundary[Unit, Any, Throwable] =
+      new FakeBoundary[Unit]
 
     forAll { (description: String, deadline: String) =>
       import scala.Console.*
@@ -73,16 +68,16 @@ final class ControllerSuite extends TestSuite:
   }
 
   private def assert[TodoId](
-      boundary: BoundaryOld[F, TodoId],
+      boundary: Boundary[TodoId, Any, Throwable],
       input: List[String],
       expectedOutput: Vector[String],
       expectedErrors: Vector[String] = Vector.empty,
     )(using
       parse: Parse[String, TodoId]
     ): Assertion =
-    val program: F[Assertion] =
+    Runtime.default.unsafeRun {
       for
-        ref <- Ref.of[F, UsefulConsole.State](UsefulConsole.State(input :+ "q"))
+        ref <- Ref.make(UsefulConsole.State(input :+ "q"))
         controller = Controller.make(
           Pattern,
           boundary,
@@ -94,70 +89,69 @@ final class ControllerSuite extends TestSuite:
       yield
         data.output `shouldBe` (expectedOutput :+ "\nUntil next time!\n")
         data.errors `shouldBe` expectedErrors
-
-    program.unsafeRunSync()
+    }
 
 object ControllerSuite:
-  private class FakeBoundary[F[_], TodoId] extends BoundaryOld[F, TodoId]:
-    override def createOne(todo: Todo.Data): F[Todo.Existing[TodoId]] = ???
+  private class FakeBoundary[TodoId] extends Boundary[TodoId, Any, Throwable]:
+    override def createOne(todo: Todo.Data): Task[Todo.Existing[TodoId]] = ???
 
-    override def createMany(todos: Vector[Todo.Data]): F[Vector[Todo.Existing[TodoId]]] = ???
+    override def createMany(todos: Vector[Todo.Data]): Task[Vector[Todo.Existing[TodoId]]] = ???
 
-    override def readOneById(id: TodoId): F[Option[Todo.Existing[TodoId]]] = ???
-    override def readManyById(ids: Vector[TodoId]): F[Vector[Todo.Existing[TodoId]]] = ???
+    override def readOneById(id: TodoId): Task[Option[Todo.Existing[TodoId]]] = ???
+    override def readManyById(ids: Vector[TodoId]): Task[Vector[Todo.Existing[TodoId]]] = ???
     override def readManyByPartialDescription(
         partialDescription: String
-      ): F[Vector[Todo.Existing[TodoId]]] = ???
+      ): Task[Vector[Todo.Existing[TodoId]]] = ???
 
-    override def readAll: F[Vector[Todo.Existing[TodoId]]] = ???
+    override def readAll: Task[Vector[Todo.Existing[TodoId]]] = ???
 
-    override def updateOne(todo: Todo.Existing[TodoId]): F[Todo.Existing[TodoId]] = ???
+    override def updateOne(todo: Todo.Existing[TodoId]): Task[Todo.Existing[TodoId]] = ???
 
     override def updateMany(
         todos: Vector[Todo.Existing[TodoId]]
-      ): F[Vector[Todo.Existing[TodoId]]] = ???
+      ): Task[Vector[Todo.Existing[TodoId]]] = ???
 
-    override def deleteOne(todo: Todo.Existing[TodoId]): F[Unit] = ???
-    override def deleteMany(todos: Vector[Todo.Existing[TodoId]]): F[Unit] = ???
-    override def deleteAll: F[Unit] = ???
+    override def deleteOne(todo: Todo.Existing[TodoId]): Task[Unit] = ???
+    override def deleteMany(todos: Vector[Todo.Existing[TodoId]]): Task[Unit] = ???
+    override def deleteAll: Task[Unit] = ???
 
-  private class FakeFancyConsole[F[_]] extends FancyConsole[F]:
-    override def getStrLnTrimmedWithPrompt(prompt: String): F[String] = ???
-    override def putStrLn(line: String): F[Unit] = ???
-    override def putSuccess(line: String): F[Unit] = ???
-    override def putWarning(line: String): F[Unit] = ???
-    override def putErrLn(line: String): F[Unit] = ???
-    override def putStrLnInColor(line: String)(color: String): F[Unit] = ???
+  private class FakeFancyConsole extends FancyConsole[Any, Nothing]:
+    override def getStrLnTrimmedWithPrompt(prompt: String): UIO[String] = ???
+    override def putStrLn(line: String): UIO[Unit] = ???
+    override def putSuccess(line: String): UIO[Unit] = ???
+    override def putWarning(line: String): UIO[Unit] = ???
+    override def putErrLn(line: String): UIO[Unit] = ???
+    override def putStrLnInColor(line: String)(color: String): UIO[Unit] = ???
 
-  private class FakeRandom[F[_]] extends Random[F]:
-    override def nextInt(n: Int): F[Int] = ???
+  private class FakeRandom extends Random[Any, Nothing]:
+    override def nextInt(n: Int): UIO[Int] = ???
 
   private given Parse[String, Unit] =
     _ => Right(())
 
-  private class UsefulRandom[F[_]: Applicative](fakeN: Int) extends FakeRandom[F]:
-    override def nextInt(n: Int): F[Int] =
-      summon[Applicative[F]].pure(fakeN)
+  private class UsefulRandom(fakeN: Int) extends FakeRandom:
+    override def nextInt(n: Int): UIO[Int] =
+      ZIO.succeed(fakeN)
 
-  private class UsefulConsole[F[_]: effect.Sync](
-      ref: Ref[F, UsefulConsole.State]
-    ) extends FakeFancyConsole[F]:
-    override def getStrLnTrimmedWithPrompt(prompt: String): F[String] =
+  private class UsefulConsole(
+      ref: Ref[UsefulConsole.State]
+    ) extends FakeFancyConsole:
+    override def getStrLnTrimmedWithPrompt(prompt: String): UIO[String] =
       ref.modify { state =>
         val head :: tail = state.input: @unchecked
 
-        state.copy(input = tail) -> head
+        head -> state.copy(input = tail)
       }
 
-    override def putStrLn(line: String): F[Unit] =
+    override def putStrLn(line: String): UIO[Unit] =
       ref.update { state =>
         state.copy(output = state.output :+ line)
       }
 
-    override def putSuccess(line: String): F[Unit] =
+    override def putSuccess(line: String): UIO[Unit] =
       putStrLn(line)
 
-    override def putErrLn(line: String): F[Unit] =
+    override def putErrLn(line: String): UIO[Unit] =
       ref.update { state =>
         state.copy(errors = state.errors :+ line)
       }

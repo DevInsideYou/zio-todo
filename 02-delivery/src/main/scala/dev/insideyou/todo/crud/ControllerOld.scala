@@ -4,23 +4,24 @@ package crud
 
 import scala.util.control.NonFatal
 
-import cats.data.NonEmptyVector
-import zio.*
+import cats.*
+import cats.data.*
 
-trait Controller[-R, +E]:
-  def program: ZIO[R, E, Unit]
+trait ControllerOld[F[_]]:
+  def program: F[Unit]
 
-object Controller:
-  def make[TodoId, R](
+object ControllerOld:
+  def make[F[_], TodoId](
       pattern: DateTimeFormatter,
-      boundary: Boundary[TodoId, R, Throwable],
-      console: FancyConsole[Any, Nothing],
-      random: Random[Any, Nothing],
+      boundary: BoundaryOld[F, TodoId],
+      console: FancyConsoleOld[F],
+      random: RandomOld[F],
     )(using
-      parse: Parse[String, TodoId]
-    ): Controller[R, Nothing] =
+      ME: MonadError[F, Throwable],
+      parse: Parse[String, TodoId],
+    ): ControllerOld[F] =
     new:
-      override lazy val program: URIO[R, Unit] =
+      override lazy val program: F[Unit] =
         val colors: Vector[String] =
           Vector(
             // scala.Console.BLACK,
@@ -33,13 +34,13 @@ object Controller:
             scala.Console.YELLOW,
           )
 
-        val randomColor: UIO[String] =
+        val randomColor: F[String] =
           random.nextInt(colors.size).map(colors)
 
-        val hyphens: UIO[String] =
+        val hyphens: F[String] =
           randomColor.map(inColor("─" * 100))
 
-        val menu: UIO[String] =
+        val menu: F[String] =
           hyphens.map { h =>
             s"""|
                 |$h
@@ -58,7 +59,7 @@ object Controller:
                 |Please enter a command:""".stripMargin
           }
 
-        val prompt: UIO[String] =
+        val prompt: F[String] =
           menu.flatMap(console.getStrLnTrimmedWithPrompt)
 
         object Exit:
@@ -76,35 +77,35 @@ object Controller:
             case "ud"   => updateDescription.as(true)
             case "udl"  => updateDeadline.as(true)
             case Exit() => exit.as(false)
-            case _      => ZIO.succeed(true)
+            case _      => true.pure[F]
           }
-          .catchAll {
+          .handleErrorWith {
             case NonFatal(throwable) =>
               console.putErrLn(throwable.getMessage).as(true)
           }
-          .repeatWhile(identity)
-          .unit
+          .iterateWhile(identity)
+          .void
       end program
 
-      private lazy val descriptionPrompt: UIO[String] =
+      private lazy val descriptionPrompt: F[String] =
         console.getStrLnTrimmedWithPrompt("Please enter a description:")
 
-      private lazy val create: RIO[R, Unit] =
+      private lazy val create: F[Unit] =
         descriptionPrompt.flatMap { description =>
           withDeadlinePrompt { deadline =>
-            boundary.createOne(Todo.Data(description, deadline)) *>
+            boundary.createOne(Todo.Data(description, deadline)) >>
               console.putSuccess("Successfully created the new todo.")
           }
         }
 
       private def withDeadlinePrompt(
-          onSuccess: LocalDateTime => RIO[R, Unit]
-        ): RIO[R, Unit] =
+          onSuccess: LocalDateTime => F[Unit]
+        ): F[Unit] =
         deadlinePrompt
           .map(toLocalDateTime)
           .flatMap(_.fold(console.putErrLn, onSuccess))
 
-      private lazy val deadlinePrompt: UIO[String] =
+      private lazy val deadlinePrompt: F[String] =
         console.getStrLnTrimmedWithPrompt(
           s"Please enter a deadline in the following format $DeadlinePromptFormat:"
         )
@@ -125,58 +126,52 @@ object Controller:
             s"\n$renderedInput does not match the required format $DeadlinePromptFormat."
           }
 
-      private lazy val idPrompt: UIO[String] =
+      private lazy val idPrompt: F[String] =
         console.getStrLnTrimmedWithPrompt("Please enter the id:")
 
-      private lazy val delete: RIO[R, Unit] =
+      private lazy val delete: F[Unit] =
         withIdPrompt { id =>
           withReadOne(id) { todo =>
-            boundary.deleteOne(todo) *>
+            boundary.deleteOne(todo) >>
               console.putSuccess("Successfully deleted the todo.")
           }
         }
 
-      private def withIdPrompt(onValidId: TodoId => RIO[R, Unit]): RIO[R, Unit] =
+      private def withIdPrompt(onValidId: TodoId => F[Unit]): F[Unit] =
         idPrompt.map(toId).flatMap(_.fold(console.putErrLn, onValidId))
 
       private def toId(userInput: String): Either[String, TodoId] =
         parse(userInput).leftMap(_.getMessage)
 
-      private def withReadOne(
-          id: TodoId
-        )(
-          onFound: Todo.Existing[TodoId] => RIO[R, Unit]
-        ): RIO[R, Unit] =
+      private def withReadOne(id: TodoId)(onFound: Todo.Existing[TodoId] => F[Unit]): F[Unit] =
         boundary
           .readOneById(id)
           .flatMap(_.fold(displayNoTodosFoundMessage)(onFound))
 
-      private lazy val displayNoTodosFoundMessage: UIO[Unit] =
+      private lazy val displayNoTodosFoundMessage: F[Unit] =
         console.putWarning("\nNo todos found!")
 
-      private lazy val deleteAll: RIO[R, Unit] =
-        boundary.deleteAll *> console.putSuccess("Successfully deleted all todos.")
+      private lazy val deleteAll: F[Unit] =
+        boundary.deleteAll >> console.putSuccess("Successfully deleted all todos.")
 
-      private lazy val showAll: RIO[R, Unit] =
+      private lazy val showAll: F[Unit] =
         boundary
           .readAll
           .map(NonEmptyVector.fromVector)
           .flatMap(_.fold(displayNoTodosFoundMessage)(displayOneOrMany))
 
-      private def displayOneOrMany(todos: NonEmptyVector[Todo.Existing[TodoId]]): UIO[Unit] =
+      private def displayOneOrMany(todos: NonEmptyVector[Todo.Existing[TodoId]]): F[Unit] =
         val uxMatters =
           if todos.size == 1 then "todo" else "todos"
 
         val renderedSize: String =
           inColor(todos.size.toString)(scala.Console.GREEN)
 
-        console.putStrLn(s"\nFound $renderedSize $uxMatters:\n") *>
+        console.putStrLn(s"\nFound $renderedSize $uxMatters:\n") >>
           todos
-            .toVector
-            .sortBy(_.deadline)
+            .sortBy(_.deadline)(Order.fromOrdering)
             .map(renderedWithPattern)
-            .pipe(ZIO.foreach(_)(console.putStrLn))
-            .unit
+            .traverse_(console.putStrLn)
 
       private def renderedWithPattern(todo: Todo.Existing[TodoId]): String =
         val renderedId: String =
@@ -190,40 +185,40 @@ object Controller:
 
         s"$renderedId $renderedDescription is due on $renderedDeadline."
 
-      private lazy val searchByDescription: RIO[R, Unit] =
+      private lazy val searchByDescription: F[Unit] =
         descriptionPrompt
           .flatMap(boundary.readManyByPartialDescription)
           .map(NonEmptyVector.fromVector)
           .flatMap(_.fold(displayNoTodosFoundMessage)(displayOneOrMany))
 
-      private lazy val searchById: RIO[R, Unit] =
+      private lazy val searchById: F[Unit] =
         withIdPrompt { id =>
           withReadOne(id) { todo =>
             displayOneOrMany(NonEmptyVector.of(todo))
           }
         }
 
-      private lazy val updateDescription: RIO[R, Unit] =
+      private lazy val updateDescription: F[Unit] =
         withIdPrompt { id =>
           withReadOne(id) { todo =>
             descriptionPrompt.flatMap { description =>
-              boundary.updateOne(todo.withUpdatedDescription(description)) *>
+              boundary.updateOne(todo.withUpdatedDescription(description)) >>
                 console.putSuccess("Successfully updated the description.")
             }
           }
         }
 
-      private lazy val updateDeadline: RIO[R, Unit] =
+      private lazy val updateDeadline: F[Unit] =
         withIdPrompt { id =>
           withReadOne(id) { todo =>
             withDeadlinePrompt { deadline =>
-              boundary.updateOne(todo.withUpdatedDeadline(deadline)) *>
+              boundary.updateOne(todo.withUpdatedDeadline(deadline)) >>
                 console.putSuccess("Successfully updated the deadline.")
             }
           }
         }
 
-      private lazy val exit: UIO[Unit] =
+      private lazy val exit: F[Unit] =
         console.putStrLn("\nUntil next time!\n")
     end new
 
