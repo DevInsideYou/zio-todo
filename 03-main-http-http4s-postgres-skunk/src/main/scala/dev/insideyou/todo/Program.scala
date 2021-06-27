@@ -1,17 +1,15 @@
 package dev.insideyou
 package todo
 
-import scala.concurrent.*
-
-import cats.effect.*
+import zio.*
 
 object Program:
-  def make[F[_]: Async: std.Console: natchez.Trace](executionContext: ExecutionContext): F[Unit] =
-    SessionPoolOld.make.use { resource =>
+  lazy val make: Z[Unit] =
+    SessionPool.make.use { resource =>
       for
         controller <- crud.DependencyGraph.make(Pattern, resource)
-        server <- ServerOld.make(executionContext) {
-          HttpAppOld.make(
+        server <- Server.make {
+          HttpApp.make(
             controller
           )
         }
