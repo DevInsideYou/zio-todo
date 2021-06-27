@@ -28,11 +28,6 @@ object Dependencies {
       private def dependency(artifact: String): ModuleID =
         "io.circe" %% s"circe-$artifact" % "0.14.1"
     }
-
-    case object monix {
-      val `monix-eval` =
-        "io.monix" %% "monix-eval" % "3.3.0"
-    }
   }
 
   case object org {
@@ -78,9 +73,6 @@ object Dependencies {
     case object typelevel {
       val `cats-core` =
         "org.typelevel" %% "cats-core" % "2.6.1"
-
-      val `cats-effect` =
-        "org.typelevel" %% "cats-effect" % "3.1.1"
 
       val `discipline-scalatest` =
         "org.typelevel" %% "discipline-scalatest" % "2.1.5"

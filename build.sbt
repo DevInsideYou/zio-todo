@@ -47,11 +47,6 @@ lazy val delivery =
     .in(file("02-delivery"))
     .dependsOn(core % Cctt)
     .settings(commonSettings)
-    .settings(
-      libraryDependencies ++= Seq(
-        org.typelevel.`cats-effect`
-      )
-    )
 
 lazy val `delivery-http-http4s` =
   project
@@ -66,7 +61,6 @@ lazy val `delivery-http-http4s` =
         org.http4s.`http4s-circe`,
         org.http4s.`http4s-dsl`,
         org.slf4j.`slf4j-simple`,
-        org.typelevel.`cats-effect`,
       )
     )
 
@@ -75,11 +69,6 @@ lazy val persistence =
     .in(file("02-persistence"))
     .dependsOn(core % Cctt)
     .settings(commonSettings)
-    .settings(
-      libraryDependencies ++= Seq(
-        org.typelevel.`cats-effect`
-      )
-    )
 
 lazy val `persistence-postgres-skunk` =
   project
@@ -89,8 +78,7 @@ lazy val `persistence-postgres-skunk` =
     .settings(commonSettings)
     .settings(
       libraryDependencies ++= Seq(
-        org.tpolecat.`skunk-core`,
-        org.typelevel.`cats-effect`,
+        org.tpolecat.`skunk-core`
       )
     )
 
@@ -100,7 +88,6 @@ lazy val main =
     .dependsOn(delivery % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
-    .settings(libraryDependencies ++= effects)
 
 lazy val `main-http-http4s` =
   project
@@ -108,7 +95,6 @@ lazy val `main-http-http4s` =
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
-    .settings(libraryDependencies ++= effects)
 
 lazy val `main-postgres-skunk` =
   project
@@ -116,7 +102,6 @@ lazy val `main-postgres-skunk` =
     .dependsOn(delivery % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)
-    .settings(libraryDependencies ++= effects)
 
 lazy val `main-http-http4s-postgres-skunk` =
   project
@@ -124,7 +109,6 @@ lazy val `main-http-http4s-postgres-skunk` =
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)
-    .settings(libraryDependencies ++= effects)
 
 lazy val commonSettings = Seq(
   update / evictionWarningOptions := EvictionWarningOptions.empty,
@@ -139,11 +123,4 @@ lazy val commonDependencies = Seq(
     org.scalatestplus.`scalacheck-1-15`,
     org.typelevel.`discipline-scalatest`,
   ).map(_ % Test)
-)
-
-lazy val effects = Seq(
-  dev.zio.`zio-interop-cats`,
-  dev.zio.zio,
-  // io.monix.`monix-eval`,
-  org.typelevel.`cats-effect`,
 )
