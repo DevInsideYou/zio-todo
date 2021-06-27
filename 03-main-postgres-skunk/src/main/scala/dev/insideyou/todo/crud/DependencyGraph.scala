@@ -11,7 +11,7 @@ object DependencyGraph:
       random: RandomOld[F],
       resource: effect.Resource[F, skunk.Session[F]],
     ): F[ControllerOld[F]] =
-    PostgresEntityGateway.make(resource).map { gateway =>
+    PostgresEntityGatewayOld.make(resource).map { gateway =>
       ControllerOld.make(
         pattern = pattern,
         boundary = BoundaryOld.make(gateway),

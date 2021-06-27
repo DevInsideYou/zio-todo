@@ -7,7 +7,7 @@ import cats.effect.*
 
 object Program:
   def make[F[_]: Async: std.Console: natchez.Trace](executionContext: ExecutionContext): F[Unit] =
-    SessionPool.make.use { resource =>
+    SessionPoolOld.make.use { resource =>
       for
         controller <- crud.DependencyGraph.make(Pattern, resource)
         server <- Server.make(executionContext) {

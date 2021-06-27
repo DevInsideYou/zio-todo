@@ -9,7 +9,7 @@ object DependencyGraph:
       pattern: DateTimeFormatter,
       resource: effect.Resource[F, skunk.Session[F]],
     ): F[Controller[F]] =
-    PostgresEntityGateway.make(resource).flatMap { gateway =>
+    PostgresEntityGatewayOld.make(resource).flatMap { gateway =>
       Controller.make(
         pattern = pattern,
         boundary = BoundaryOld.make(gateway),

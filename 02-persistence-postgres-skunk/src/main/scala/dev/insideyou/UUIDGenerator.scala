@@ -1,14 +1,14 @@
 package dev.insideyou
 
-import cats.*
+import zio.*
 
-trait UUIDGenerator[F[_]]:
-  def genUUID: F[UUID]
+trait UUIDGenerator[-R, +E]:
+  def genUUID: ZIO[R, E, UUID]
 
 object UUIDGenerator:
-  def make[F[_]](using S: effect.Sync[F]): F[UUIDGenerator[F]] =
-    S.delay {
+  lazy val make: UIO[UUIDGenerator[Any, Nothing]] =
+    ZIO.succeed {
       new:
-        override lazy val genUUID: F[UUID] =
-          S.delay(UUID.randomUUID())
+        override lazy val genUUID: UIO[UUID] =
+          ZIO.succeed(UUID.randomUUID())
     }

@@ -5,7 +5,7 @@ import cats.effect.*
 
 object Program:
   def make[F[_]: Async: std.Console: natchez.Trace]: F[Unit] =
-    SessionPool.make.use { resource =>
+    SessionPoolOld.make.use { resource =>
       for
         console <- ConsoleOld.make
         random <- RandomOld.make
