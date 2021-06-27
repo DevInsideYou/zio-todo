@@ -29,5 +29,5 @@ object Todo:
   given Encoder[Todo] =
     deriveEncoder
 
-  given [F[_]]: EntityEncoder[F, Todo] =
+  given EntityEncoder[Z, Todo] =
     jsonEncoderOf
