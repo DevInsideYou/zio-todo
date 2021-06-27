@@ -15,7 +15,7 @@ object DependencyGraph:
       Controller.make(
         pattern = pattern,
         boundary = BoundaryOld.make(
-          gateway = InMemoryEntityGateway.make(state)
+          gateway = InMemoryEntityGatewayOld.make(state)
         ),
         console = FancyConsole.make(console),
         random = random,
