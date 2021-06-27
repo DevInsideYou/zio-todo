@@ -1,13 +1,13 @@
 package dev.insideyou
 package todo
 
-import cats.*
+import zio.*
 
 object Program:
-  def make[F[_]: effect.Sync]: F[Unit] =
+  lazy val make: UIO[Unit] =
     for
-      console <- ConsoleOld.make
-      random <- RandomOld.make
+      console <- Console.make
+      random <- Random.make
       controller <- crud.DependencyGraph.make(Pattern, console, random)
       _ <- controller.program
     yield ()
