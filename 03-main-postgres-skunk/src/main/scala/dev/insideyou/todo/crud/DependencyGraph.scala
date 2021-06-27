@@ -14,7 +14,7 @@ object DependencyGraph:
     PostgresEntityGateway.make(resource).map { gateway =>
       Controller.make(
         pattern = pattern,
-        boundary = Boundary.make(gateway),
+        boundary = BoundaryOld.make(gateway),
         console = FancyConsole.make(console),
         random = random,
       )

@@ -10,7 +10,7 @@ object InMemoryEntityGateway:
       state: Ref[F, Vector[Todo.Existing[Int]]]
     )(using
       MonadError[F, Throwable]
-    ): EntityGateway[F, Int] =
+    ): EntityGatewayOld[F, Int] =
     new:
       private lazy val statement: Statement[F, Int] =
         Statement.make(state)

@@ -26,7 +26,8 @@ lazy val core =
     .settings(commonDependencies)
     .settings(
       libraryDependencies ++= Seq(
-        org.typelevel.`cats-core`
+        dev.zio.zio,
+        org.typelevel.`cats-core`,
       )
     )
 

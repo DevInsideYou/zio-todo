@@ -10,7 +10,7 @@ object DependencyGraph:
     Ref.of[F, Vector[Todo.Existing[Int]]](Vector.empty).flatMap { state =>
       Controller.make(
         pattern = pattern,
-        boundary = Boundary.make(
+        boundary = BoundaryOld.make(
           gateway = InMemoryEntityGateway.make(state)
         ),
       )

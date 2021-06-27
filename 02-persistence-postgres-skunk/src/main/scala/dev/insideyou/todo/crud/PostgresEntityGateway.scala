@@ -9,7 +9,7 @@ object PostgresEntityGateway:
       resource: effect.Resource[F, skunk.Session[F]]
     )(using
       S: effect.Sync[F]
-    ): F[EntityGateway[F, UUID]] =
+    ): F[EntityGatewayOld[F, UUID]] =
     S.delay {
       new:
         override def createMany(todos: Vector[Todo.Data]): F[Vector[Todo.Existing[UUID]]] =

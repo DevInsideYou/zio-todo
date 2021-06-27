@@ -15,7 +15,7 @@ import org.http4s.server.Router
 object Controller:
   def make[F[_], TodoId](
       pattern: DateTimeFormatter,
-      boundary: Boundary[F, TodoId],
+      boundary: BoundaryOld[F, TodoId],
     )(using
       A: effect.Async[F],
       parse: Parse[String, TodoId],

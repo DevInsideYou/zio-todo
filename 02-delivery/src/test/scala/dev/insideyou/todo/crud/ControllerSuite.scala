@@ -15,7 +15,7 @@ final class ControllerSuite extends TestSuite:
   private val F = effect.IO
 
   test("test suite should quit automatically") {
-    val boundary: Boundary[F, Unit] =
+    val boundary: BoundaryOld[F, Unit] =
       new FakeBoundary[F, Unit]
 
     assert(
@@ -26,7 +26,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should create on 'c'") {
-    val boundary: Boundary[F, Unit] =
+    val boundary: BoundaryOld[F, Unit] =
       new FakeBoundary[F, Unit]:
         override def createOne(todo: Todo.Data): F[Todo.Existing[Unit]] =
           F.pure(Todo.Existing((), todo))
@@ -39,7 +39,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should keep running on error") {
-    val boundary: Boundary[F, Unit] =
+    val boundary: BoundaryOld[F, Unit] =
       new FakeBoundary[F, Unit]:
         override def createOne(todo: Todo.Data): F[Todo.Existing[Unit]] =
           F.raiseError(RuntimeException("boom"))
@@ -55,7 +55,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should yield an error if deadline does not match the required format") {
-    val boundary: Boundary[F, Unit] =
+    val boundary: BoundaryOld[F, Unit] =
       new FakeBoundary[F, Unit]
 
     forAll { (description: String, deadline: String) =>
@@ -73,7 +73,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   private def assert[TodoId](
-      boundary: Boundary[F, TodoId],
+      boundary: BoundaryOld[F, TodoId],
       input: List[String],
       expectedOutput: Vector[String],
       expectedErrors: Vector[String] = Vector.empty,
@@ -98,7 +98,7 @@ final class ControllerSuite extends TestSuite:
     program.unsafeRunSync()
 
 object ControllerSuite:
-  private class FakeBoundary[F[_], TodoId] extends Boundary[F, TodoId]:
+  private class FakeBoundary[F[_], TodoId] extends BoundaryOld[F, TodoId]:
     override def createOne(todo: Todo.Data): F[Todo.Existing[TodoId]] = ???
 
     override def createMany(todos: Vector[Todo.Data]): F[Vector[Todo.Existing[TodoId]]] = ???

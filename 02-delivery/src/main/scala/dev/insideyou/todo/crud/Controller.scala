@@ -13,7 +13,7 @@ trait Controller[F[_]]:
 object Controller:
   def make[F[_], TodoId](
       pattern: DateTimeFormatter,
-      boundary: Boundary[F, TodoId],
+      boundary: BoundaryOld[F, TodoId],
       console: FancyConsole[F],
       random: Random[F],
     )(using

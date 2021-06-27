@@ -12,6 +12,6 @@ object DependencyGraph:
     PostgresEntityGateway.make(resource).flatMap { gateway =>
       Controller.make(
         pattern = pattern,
-        boundary = Boundary.make(gateway),
+        boundary = BoundaryOld.make(gateway),
       )
     }
