@@ -15,11 +15,7 @@ final case class Todo(
   )
 
 object Todo:
-  def apply[TodoId](
-      pattern: DateTimeFormatter
-    )(
-      existing: domain.todo.crud.Todo.Existing[TodoId]
-    ): Todo =
+  def apply[TodoId](pattern: DateTimeFormatter)(existing: crud.Todo.Existing[TodoId]): Todo =
     Todo(
       id = existing.id.toString,
       description = existing.data.description,
