@@ -99,9 +99,8 @@ object ControllerSuite:
 
     override def readOneById(id: TodoId): Task[Option[Todo.Existing[TodoId]]] = ???
     override def readManyById(ids: Vector[TodoId]): Task[Vector[Todo.Existing[TodoId]]] = ???
-    override def readManyByPartialDescription(
-        partialDescription: String
-      ): Task[Vector[Todo.Existing[TodoId]]] = ???
+    override def readManyByDescription(description: String): Task[Vector[Todo.Existing[TodoId]]] =
+      ???
 
     override def readAll: Task[Vector[Todo.Existing[TodoId]]] = ???
 

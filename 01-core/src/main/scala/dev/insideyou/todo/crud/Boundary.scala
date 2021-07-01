@@ -10,9 +10,7 @@ trait Boundary[-R, +E, TodoId]:
 
   def readOneById(id: TodoId): ZIO[R, E, Option[Todo.Existing[TodoId]]]
   def readManyById(ids: Vector[TodoId]): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
-  def readManyByPartialDescription(
-      partialDescription: String
-    ): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
+  def readManyByDescription(description: String): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
   def readAll: ZIO[R, E, Vector[Todo.Existing[TodoId]]]
 
   def updateOne(todo: Todo.Existing[TodoId]): ZIO[R, E, Todo.Existing[TodoId]]
@@ -52,11 +50,11 @@ object Boundary:
       override def readManyById(ids: Vector[TodoId]): RIO[R, Vector[Todo.Existing[TodoId]]] =
         gateway.readManyById(ids)
 
-      override def readManyByPartialDescription(
-          partialDescription: String
+      override def readManyByDescription(
+          description: String
         ): RIO[R, Vector[Todo.Existing[TodoId]]] =
-        if partialDescription.isEmpty then ZIO.succeed(Vector.empty)
-        else gateway.readManyByPartialDescription(partialDescription.trim)
+        if description.isEmpty then ZIO.succeed(Vector.empty)
+        else gateway.readManyByDescription(description.trim)
 
       override lazy val readAll: RIO[R, Vector[Todo.Existing[TodoId]]] =
         gateway.readAll

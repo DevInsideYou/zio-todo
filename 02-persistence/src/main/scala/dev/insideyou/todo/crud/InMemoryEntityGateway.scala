@@ -23,12 +23,10 @@ object InMemoryEntityGateway:
           .selectAll
           .map(_.filter(todo => ids.contains(todo.id)))
 
-      override def readManyByPartialDescription(
-          partialDescription: String
-        ): Task[Vector[Todo.Existing[Int]]] =
+      override def readManyByDescription(description: String): Task[Vector[Todo.Existing[Int]]] =
         statement
           .selectAll
-          .map(_.filter(_.description.toLowerCase.contains(partialDescription.toLowerCase)))
+          .map(_.filter(_.description.toLowerCase.contains(description.toLowerCase)))
 
       override lazy val readAll: Task[Vector[Todo.Existing[Int]]] =
         statement.selectAll

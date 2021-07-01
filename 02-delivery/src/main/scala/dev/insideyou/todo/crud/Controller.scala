@@ -48,7 +48,7 @@ object Controller:
                 |d                   => delete todo
                 |da                  => delete all todos
                 |sa                  => show all todos
-                |sd                  => search by partial description
+                |sd                  => search by description
                 |sid                 => search by id
                 |ud                  => update description
                 |udl                 => update deadline
@@ -192,7 +192,7 @@ object Controller:
 
       private lazy val searchByDescription: RIO[R, Unit] =
         descriptionPrompt
-          .flatMap(boundary.readManyByPartialDescription)
+          .flatMap(boundary.readManyByDescription)
           .map(NonEmptyVector.fromVector)
           .flatMap(_.fold(displayNoTodosFoundMessage)(displayOneOrMany))
 

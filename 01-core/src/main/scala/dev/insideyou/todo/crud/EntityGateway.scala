@@ -9,9 +9,7 @@ trait EntityGateway[-R, +E, TodoId]:
   def updateMany(todos: Vector[Todo.Existing[TodoId]]): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
 
   def readManyById(ids: Vector[TodoId]): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
-  def readManyByPartialDescription(
-      partialDescription: String
-    ): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
+  def readManyByDescription(description: String): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
   def readAll: ZIO[R, E, Vector[Todo.Existing[TodoId]]]
 
   def deleteMany(todos: Vector[Todo.Existing[TodoId]]): ZIO[R, E, Unit]

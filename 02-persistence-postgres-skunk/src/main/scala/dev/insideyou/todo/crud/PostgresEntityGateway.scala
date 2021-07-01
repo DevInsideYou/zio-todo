@@ -52,15 +52,13 @@ object PostgresEntityGateway:
               }
           }
 
-        override def readManyByPartialDescription(
-            partialDescription: String
-          ): Z[Vector[Todo.Existing[UUID]]] =
+        override def readManyByDescription(description: String): Z[Vector[Todo.Existing[UUID]]] =
           resource.use { session =>
             session
               .prepare(Statement.Select.byDescription)
               .use { preparedQuery =>
                 preparedQuery
-                  .stream(partialDescription, ChunkSizeInBytes)
+                  .stream(description, ChunkSizeInBytes)
                   .compile
                   .toVector
               }

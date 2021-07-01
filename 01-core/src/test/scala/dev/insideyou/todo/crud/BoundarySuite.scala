@@ -34,9 +34,7 @@ final class BoundarySuite extends TestSuite:
 
     val entityGateway: EntityGateway[Any, Nothing, Unit] =
       new FakeEntityGateway[Unit]:
-        override def readManyByPartialDescription(
-            partialDescription: String
-          ): UIO[Vector[Todo.Existing[Unit]]] =
+        override def readManyByDescription(description: String): UIO[Vector[Todo.Existing[Unit]]] =
           ZIO.succeed {
             wasCalled = true
 
@@ -49,7 +47,7 @@ final class BoundarySuite extends TestSuite:
     Runtime.default.unsafeRun {
       for
         _ <- ZIO.succeed(When("the description is empty"))
-        _ <- boundary.readManyByPartialDescription("")
+        _ <- boundary.readManyByDescription("")
       yield
         Then("gateway.readByDescription should NOT be called")
         wasCalled `shouldBe` false
@@ -60,7 +58,7 @@ final class BoundarySuite extends TestSuite:
         Runtime.default.unsafeRun {
           for
             _ <- ZIO.succeed(When("the description is NOT empty"))
-            _ <- boundary.readManyByPartialDescription(description)
+            _ <- boundary.readManyByDescription(description)
           yield
             Then("gateway.readByDescription should be called")
             wasCalled `shouldBe` true
@@ -78,10 +76,8 @@ object BoundarySuite:
       ): UIO[Vector[Todo.Existing[TodoId]]] = ???
 
     override def readManyById(ids: Vector[TodoId]): UIO[Vector[Todo.Existing[TodoId]]] = ???
-
-    override def readManyByPartialDescription(
-        partialDescription: String
-      ): UIO[Vector[Todo.Existing[TodoId]]] = ???
+    override def readManyByDescription(description: String): UIO[Vector[Todo.Existing[TodoId]]] =
+      ???
 
     override def readAll: UIO[Vector[Todo.Existing[TodoId]]] = ???
 

@@ -147,7 +147,7 @@ object Controller:
           }
 
         private def searchByDescription(description: String): Z[ZResponse] =
-          boundary.readManyByPartialDescription(description).flatMap { todos =>
+          boundary.readManyByDescription(description).flatMap { todos =>
             todos
               .map(response.Todo(pattern))
               .asJson
