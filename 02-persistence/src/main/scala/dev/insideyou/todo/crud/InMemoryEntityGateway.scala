@@ -5,9 +5,7 @@ package crud
 import zio.*
 
 object InMemoryEntityGateway:
-  def make(
-      state: Ref[Vector[Todo.Existing[Int]]]
-    ): EntityGateway[Any, Throwable, Int] =
+  def make(state: Ref[Vector[Todo.Existing[Int]]]): EntityGateway[Any, Throwable, Int] =
     new:
       private lazy val statement: Statement[Any, Throwable, Int] =
         Statement.make(state)

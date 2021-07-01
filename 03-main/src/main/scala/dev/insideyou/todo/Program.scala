@@ -6,8 +6,7 @@ import zio.*
 object Program:
   lazy val make: UIO[Unit] =
     for
-      console <- Console.make
-      random <- Random.make
+      (console, random) <- Console.make.zipPar(Random.make)
       controller <- crud.DependencyGraph.make(Pattern, console, random)
       _ <- controller.program
     yield ()

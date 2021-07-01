@@ -7,10 +7,8 @@ object Program:
   lazy val make: Z[Unit] =
     SessionPool.make.use { resource =>
       for
-        console <- Console.make
-        random <- Random.make
-        controller <-
-          crud.DependencyGraph.make(Pattern, console, random, resource)
+        (console, random) <- Console.make.zipPar(Random.make)
+        controller <- crud.DependencyGraph.make(Pattern, console, random, resource)
         _ <- controller.program
       yield ()
     }

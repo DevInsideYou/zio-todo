@@ -11,9 +11,7 @@ trait Server[-R, +E]:
   def serve: ZIO[R, E, Unit]
 
 object Server:
-  def make(
-      httpApp: HttpApp[Z]
-    ): UIO[Server[ZEnv, Throwable]] =
+  def make(httpApp: HttpApp[Z]): UIO[Server[ZEnv, Throwable]] =
     ZIO.succeed {
       new:
         override lazy val serve: Z[Unit] =

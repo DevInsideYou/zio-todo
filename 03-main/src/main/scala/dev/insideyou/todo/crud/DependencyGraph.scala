@@ -13,9 +13,7 @@ object DependencyGraph:
     Ref.make(Vector.empty[Todo.Existing[Int]]).map { state =>
       Controller.make(
         pattern = pattern,
-        boundary = Boundary.make(
-          gateway = InMemoryEntityGateway.make(state)
-        ),
+        boundary = Boundary.make(InMemoryEntityGateway.make(state)),
         console = FancyConsole.make(console),
         random = random,
       )

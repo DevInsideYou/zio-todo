@@ -103,7 +103,8 @@ object Controller:
           (
             toId(id).toEitherNec,
             toLocalDateTime(deadline).toEitherNec,
-          ).parTupled
+          )
+            .parTupled
             .fold(
               errors => BadRequest(errors.asJson),
               happyPath(description).tupled,

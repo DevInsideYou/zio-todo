@@ -12,9 +12,7 @@ trait Statement[-R, +E, TodoId]:
   def deleteAll: ZIO[R, E, Unit]
 
 object Statement:
-  def make(
-      state: Ref[Vector[Todo.Existing[Int]]]
-    ): Statement[Any, Throwable, Int] =
+  def make(state: Ref[Vector[Todo.Existing[Int]]]): Statement[Any, Throwable, Int] =
     new:
       override lazy val selectAll: Task[Vector[Todo.Existing[Int]]] =
         state.get
