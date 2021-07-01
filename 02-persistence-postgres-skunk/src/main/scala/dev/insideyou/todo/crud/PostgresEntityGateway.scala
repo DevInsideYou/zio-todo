@@ -7,7 +7,7 @@ import zio.*
 object PostgresEntityGateway:
   def make(
       resource: RManaged[ZEnv, skunk.Session[Z]]
-    ): UIO[EntityGateway[UUID, ZEnv, Throwable]] =
+    ): UIO[EntityGateway[ZEnv, Throwable, UUID]] =
     ZIO.succeed {
       new:
         override def createMany(todos: Vector[Todo.Data]): Z[Vector[Todo.Existing[UUID]]] =

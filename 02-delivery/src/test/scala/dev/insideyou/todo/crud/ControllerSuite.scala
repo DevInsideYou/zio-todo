@@ -10,7 +10,7 @@ final class ControllerSuite extends TestSuite:
   import ControllerSuite.{ *, given }
 
   test("test suite should quit automatically") {
-    val boundary: Boundary[Unit, Any, Throwable] =
+    val boundary: Boundary[Any, Throwable, Unit] =
       new FakeBoundary[Unit]
 
     assert(
@@ -21,7 +21,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should create on 'c'") {
-    val boundary: Boundary[Unit, Any, Throwable] =
+    val boundary: Boundary[Any, Throwable, Unit] =
       new FakeBoundary[Unit]:
         override def createOne(todo: Todo.Data): Task[Todo.Existing[Unit]] =
           ZIO.succeed(Todo.Existing((), todo))
@@ -34,7 +34,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should keep running on error") {
-    val boundary: Boundary[Unit, Any, Throwable] =
+    val boundary: Boundary[Any, Throwable, Unit] =
       new FakeBoundary[Unit]:
         override def createOne(todo: Todo.Data): Task[Todo.Existing[Unit]] =
           ZIO.fail(RuntimeException("boom"))
@@ -50,7 +50,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should yield an error if deadline does not match the required format") {
-    val boundary: Boundary[Unit, Any, Throwable] =
+    val boundary: Boundary[Any, Throwable, Unit] =
       new FakeBoundary[Unit]
 
     forAll { (description: String, deadline: String) =>
@@ -68,7 +68,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   private def assert[TodoId](
-      boundary: Boundary[TodoId, Any, Throwable],
+      boundary: Boundary[Any, Throwable, TodoId],
       input: List[String],
       expectedOutput: Vector[String],
       expectedErrors: Vector[String] = Vector.empty,
@@ -92,7 +92,7 @@ final class ControllerSuite extends TestSuite:
     }
 
 object ControllerSuite:
-  private class FakeBoundary[TodoId] extends Boundary[TodoId, Any, Throwable]:
+  private class FakeBoundary[TodoId] extends Boundary[Any, Throwable, TodoId]:
     override def createOne(todo: Todo.Data): Task[Todo.Existing[TodoId]] = ???
 
     override def createMany(todos: Vector[Todo.Data]): Task[Vector[Todo.Existing[TodoId]]] = ???

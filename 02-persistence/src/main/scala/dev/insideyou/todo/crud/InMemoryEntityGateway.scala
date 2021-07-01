@@ -7,9 +7,9 @@ import zio.*
 object InMemoryEntityGateway:
   def make(
       state: Ref[Vector[Todo.Existing[Int]]]
-    ): EntityGateway[Int, Any, Throwable] =
+    ): EntityGateway[Any, Throwable, Int] =
     new:
-      private lazy val statement: Statement[Int, Any, Throwable] =
+      private lazy val statement: Statement[Any, Throwable, Int] =
         Statement.make(state)
 
       override def createMany(todos: Vector[Todo.Data]): Task[Vector[Todo.Existing[Int]]] =

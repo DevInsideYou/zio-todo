@@ -4,7 +4,7 @@ package crud
 
 import zio.*
 
-trait Boundary[TodoId, -R, +E]:
+trait Boundary[-R, +E, TodoId]:
   def createOne(todo: Todo.Data): ZIO[R, E, Todo.Existing[TodoId]]
   def createMany(todos: Vector[Todo.Data]): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
 
@@ -23,9 +23,9 @@ trait Boundary[TodoId, -R, +E]:
   def deleteAll: ZIO[R, E, Unit]
 
 object Boundary:
-  def make[TodoId, R](
-      gateway: EntityGateway[TodoId, R, Throwable]
-    ): Boundary[TodoId, R, Throwable] =
+  def make[R, TodoId](
+      gateway: EntityGateway[R, Throwable, TodoId]
+    ): Boundary[R, Throwable, TodoId] =
     new:
       override def createOne(todo: Todo.Data): RIO[R, Todo.Existing[TodoId]] =
         createMany(Vector(todo)).map(_.head)

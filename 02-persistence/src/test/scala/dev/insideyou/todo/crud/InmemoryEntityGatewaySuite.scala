@@ -40,5 +40,5 @@ final class InMemoryEntityGatewaySuite extends TestSuite:
 
   private def makeEntityGateway(
       existing: Vector[Todo.Existing[Int]]
-    ): UIO[EntityGateway[Int, Any, Throwable]] =
+    ): UIO[EntityGateway[Any, Throwable, Int]] =
     Ref.make(existing).map(InMemoryEntityGateway.make)

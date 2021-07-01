@@ -8,7 +8,7 @@ final class BoundarySuite extends TestSuite:
   import BoundarySuite.*
 
   test("description should be trimmed") {
-    val entityGateway: EntityGateway[Unit, Any, Nothing] =
+    val entityGateway: EntityGateway[Any, Nothing, Unit] =
       new FakeEntityGateway[Unit]:
         override def createMany(todos: Vector[Todo.Data]): UIO[Vector[Todo.Existing[Unit]]] =
           ZIO.succeed {
@@ -17,7 +17,7 @@ final class BoundarySuite extends TestSuite:
             }
           }
 
-    val boundary: Boundary[Unit, Any, Throwable] =
+    val boundary: Boundary[Any, Throwable, Unit] =
       Boundary.make(entityGateway)
 
     forAll { (data: Todo.Data) =>
@@ -32,7 +32,7 @@ final class BoundarySuite extends TestSuite:
   test("readByDescription should not always call gateway.readByDescription") {
     var wasCalled = false
 
-    val entityGateway: EntityGateway[Unit, Any, Nothing] =
+    val entityGateway: EntityGateway[Any, Nothing, Unit] =
       new FakeEntityGateway[Unit]:
         override def readManyByPartialDescription(
             partialDescription: String
@@ -43,7 +43,7 @@ final class BoundarySuite extends TestSuite:
             Vector.empty
           }
 
-    val boundary: Boundary[Unit, Any, Throwable] =
+    val boundary: Boundary[Any, Throwable, Unit] =
       Boundary.make(entityGateway)
 
     Runtime.default.unsafeRun {
@@ -70,7 +70,7 @@ final class BoundarySuite extends TestSuite:
   }
 
 object BoundarySuite:
-  private class FakeEntityGateway[TodoId] extends EntityGateway[TodoId, Any, Nothing]:
+  private class FakeEntityGateway[TodoId] extends EntityGateway[Any, Nothing, TodoId]:
     override def createMany(todos: Vector[Todo.Data]): UIO[Vector[Todo.Existing[TodoId]]] = ???
 
     override def updateMany(

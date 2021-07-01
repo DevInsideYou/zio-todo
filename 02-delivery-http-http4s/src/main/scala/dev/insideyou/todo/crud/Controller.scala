@@ -15,7 +15,7 @@ import zio.*
 object Controller:
   def make[TodoId](
       pattern: DateTimeFormatter,
-      boundary: Boundary[TodoId, ZEnv, Throwable],
+      boundary: Boundary[ZEnv, Throwable, TodoId],
     )(using
       parse: Parse[String, TodoId]
     ): UIO[Controller] =

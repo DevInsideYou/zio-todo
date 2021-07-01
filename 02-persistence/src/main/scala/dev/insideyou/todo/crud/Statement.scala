@@ -4,7 +4,7 @@ package crud
 
 import zio.*
 
-trait Statement[TodoId, -R, +E]:
+trait Statement[-R, +E, TodoId]:
   def insertOne(data: Todo.Data): ZIO[R, E, Todo.Existing[TodoId]]
   def updateOne(todo: Todo.Existing[TodoId]): ZIO[R, E, Todo.Existing[TodoId]]
   def selectAll: ZIO[R, E, Vector[Todo.Existing[TodoId]]]
@@ -14,7 +14,7 @@ trait Statement[TodoId, -R, +E]:
 object Statement:
   def make(
       state: Ref[Vector[Todo.Existing[Int]]]
-    ): Statement[Int, Any, Throwable] =
+    ): Statement[Any, Throwable, Int] =
     new:
       override lazy val selectAll: Task[Vector[Todo.Existing[Int]]] =
         state.get

@@ -11,9 +11,9 @@ trait Controller[-R, +E]:
   def program: ZIO[R, E, Unit]
 
 object Controller:
-  def make[TodoId, R](
+  def make[R, TodoId](
       pattern: DateTimeFormatter,
-      boundary: Boundary[TodoId, R, Throwable],
+      boundary: Boundary[R, Throwable, TodoId],
       console: FancyConsole[Any, Nothing],
       random: Random[Any, Nothing],
     )(using
