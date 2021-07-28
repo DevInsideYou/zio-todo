@@ -2,7 +2,7 @@ import Dependencies.{ io, _ }
 import Util._
 
 ThisBuild / organization := "dev.insideyou"
-ThisBuild / scalaVersion := "3.0.0"
+ThisBuild / scalaVersion := "3.0.1"
 
 lazy val `todo` =
   project

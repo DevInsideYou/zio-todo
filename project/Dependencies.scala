@@ -13,7 +13,7 @@ object Dependencies {
   case object dev {
     case object zio {
       val zio =
-        "dev.zio" %% "zio" % "1.0.9"
+        "dev.zio" %% "zio" % "1.0.10"
 
       val `zio-interop-cats` =
         "dev.zio" %% "zio-interop-cats" % "3.1.1.0"
@@ -62,7 +62,7 @@ object Dependencies {
 
     case object slf4j {
       val `slf4j-simple` =
-        "org.slf4j" % "slf4j-simple" % "1.7.31"
+        "org.slf4j" % "slf4j-simple" % "1.7.32"
     }
 
     case object tpolecat {
