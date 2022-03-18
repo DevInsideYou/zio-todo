@@ -22,25 +22,25 @@ trait Boundary[-R, +E, TodoId]:
 
 object Boundary:
   def make[R, TodoId](
-      gateway: EntityGateway[R, Throwable, TodoId]
+      gate: Gate[R, Throwable, TodoId]
     ): Boundary[R, Throwable, TodoId] =
     new:
       override def createOne(todo: Todo.Data): RIO[R, Todo.Existing[TodoId]] =
         createMany(Vector(todo)).map(_.head)
 
       override def createMany(todos: Vector[Todo.Data]): RIO[R, Vector[Todo.Existing[TodoId]]] =
-        gateway.createMany(
+        gate.createMany(
           todos.map { todo =>
-            todo.withUpdatedDescription(todo.description.trim)
+            todo.withUpdatedDescription(todo.description.trim.nn)
           }
         )
 
       override def updateMany(
           todos: Vector[Todo.Existing[TodoId]]
         ): RIO[R, Vector[Todo.Existing[TodoId]]] =
-        gateway.updateMany(
+        gate.updateMany(
           todos.map { todo =>
-            todo.withUpdatedDescription(todo.description.trim)
+            todo.withUpdatedDescription(todo.description.trim.nn)
           }
         )
 
@@ -48,16 +48,16 @@ object Boundary:
         readManyById(Vector(id)).map(_.headOption)
 
       override def readManyById(ids: Vector[TodoId]): RIO[R, Vector[Todo.Existing[TodoId]]] =
-        gateway.readManyById(ids)
+        gate.readManyById(ids)
 
       override def readManyByDescription(
           description: String
         ): RIO[R, Vector[Todo.Existing[TodoId]]] =
         if description.isEmpty then ZIO.succeed(Vector.empty)
-        else gateway.readManyByDescription(description.trim)
+        else gate.readManyByDescription(description.trim.nn)
 
       override lazy val readAll: RIO[R, Vector[Todo.Existing[TodoId]]] =
-        gateway.readAll
+        gate.readAll
 
       override def updateOne(todo: Todo.Existing[TodoId]): RIO[R, Todo.Existing[TodoId]] =
         updateMany(Vector(todo)).map(_.head)
@@ -66,7 +66,7 @@ object Boundary:
         deleteMany(Vector(todo))
 
       override def deleteMany(todos: Vector[Todo.Existing[TodoId]]): RIO[R, Unit] =
-        gateway.deleteMany(todos)
+        gate.deleteMany(todos)
 
       override lazy val deleteAll: RIO[R, Unit] =
-        gateway.deleteAll
+        gate.deleteAll

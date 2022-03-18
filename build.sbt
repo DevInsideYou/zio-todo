@@ -2,7 +2,7 @@ import Dependencies.{ io, _ }
 import Util._
 
 ThisBuild / organization := "dev.insideyou"
-ThisBuild / scalaVersion := "3.0.1"
+ThisBuild / scalaVersion := "3.1.1"
 
 lazy val `todo` =
   project
@@ -88,6 +88,7 @@ lazy val main =
     .dependsOn(delivery % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
+    .settings(workaroundForTrapExit)
 
 lazy val `main-http-http4s` =
   project
@@ -102,6 +103,7 @@ lazy val `main-postgres-skunk` =
     .dependsOn(delivery % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)
+    .settings(workaroundForTrapExit)
 
 lazy val `main-http-http4s-postgres-skunk` =
   project
@@ -123,4 +125,13 @@ lazy val commonDependencies = Seq(
     org.scalatestplus.`scalacheck-1-15`,
     org.typelevel.`discipline-scalatest`,
   ).map(_ % Test)
+)
+
+/** https://github.com/sbt/sbt/pull/6665
+  * This makes sure that 'q' in the console app does NOT quit sbt
+  */
+lazy val workaroundForTrapExit = Seq(
+  Compile / run / fork := true,
+  Compile / run / connectInput := true,
+  Compile / run / outputStrategy := Some(StdoutOutput),
 )

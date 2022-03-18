@@ -4,7 +4,7 @@ package crud
 
 import zio.*
 
-trait EntityGateway[-R, +E, TodoId]:
+trait Gate[-R, +E, TodoId]:
   def createMany(todos: Vector[Todo.Data]): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
   def updateMany(todos: Vector[Todo.Existing[TodoId]]): ZIO[R, E, Vector[Todo.Existing[TodoId]]]
 

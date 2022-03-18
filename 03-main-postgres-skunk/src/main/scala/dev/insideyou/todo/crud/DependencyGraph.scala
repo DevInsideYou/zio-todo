@@ -11,10 +11,10 @@ object DependencyGraph:
       random: Random[Any, Nothing],
       resource: RManaged[ZEnv, skunk.Session[Z]],
     ): UIO[Controller[ZEnv, Nothing]] =
-    PostgresEntityGateway.make(resource).map { gateway =>
+    PostgresGate.make(resource).map { gate =>
       Controller.make(
         pattern = pattern,
-        boundary = Boundary.make(gateway),
+        boundary = Boundary.make(gate),
         console = FancyConsole.make(console),
         random = random,
       )

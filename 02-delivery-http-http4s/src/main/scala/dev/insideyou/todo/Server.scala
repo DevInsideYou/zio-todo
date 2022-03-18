@@ -16,7 +16,8 @@ object Server:
       new:
         override lazy val serve: Z[Unit] =
           ZIO.runtime.flatMap { runtime =>
-            BlazeServerBuilder(executionContext = runtime.platform.executor.asEC)
+            BlazeServerBuilder[Z]
+              .withExecutionContext(runtime.platform.executor.asEC)
               .bindHttp()
               .withHttpApp(httpApp)
               .serve

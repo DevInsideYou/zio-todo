@@ -9,9 +9,9 @@ object DependencyGraph:
       pattern: DateTimeFormatter,
       resource: RManaged[ZEnv, skunk.Session[Z]],
     ): UIO[Controller] =
-    PostgresEntityGateway.make(resource).flatMap { gateway =>
+    PostgresGate.make(resource).flatMap { gate =>
       Controller.make(
         pattern = pattern,
-        boundary = Boundary.make(gateway),
+        boundary = Boundary.make(gate),
       )
     }

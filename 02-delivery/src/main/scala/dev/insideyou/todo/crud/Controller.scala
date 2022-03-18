@@ -67,16 +67,16 @@ object Controller:
 
         prompt
           .flatMap {
-            case "c"    => create.as(true)
-            case "d"    => delete.as(true)
-            case "da"   => deleteAll.as(true)
-            case "sa"   => showAll.as(true)
-            case "sd"   => searchByDescription.as(true)
-            case "sid"  => searchById.as(true)
-            case "ud"   => updateDescription.as(true)
-            case "udl"  => updateDeadline.as(true)
+            case "c" => create.as(true)
+            case "d" => delete.as(true)
+            case "da" => deleteAll.as(true)
+            case "sa" => showAll.as(true)
+            case "sd" => searchByDescription.as(true)
+            case "sid" => searchById.as(true)
+            case "ud" => updateDescription.as(true)
+            case "udl" => updateDeadline.as(true)
             case Exit() => exit.as(false)
-            case _      => ZIO.succeed(true)
+            case _ => ZIO.succeed(true)
           }
           .catchAll {
             case NonFatal(throwable) =>

@@ -1,27 +1,27 @@
 import sbt._
 
 object Dependencies {
-  case object com {
-    case object github {
-      case object liancheng {
+  object com {
+    object github {
+      object liancheng {
         val `organize-imports` =
-          "com.github.liancheng" %% "organize-imports" % "0.5.0"
+          "com.github.liancheng" %% "organize-imports" % "0.6.0"
       }
     }
   }
 
-  case object dev {
-    case object zio {
+  object dev {
+    object zio {
       val zio =
-        "dev.zio" %% "zio" % "1.0.10"
+        "dev.zio" %% "zio" % "1.0.13"
 
       val `zio-interop-cats` =
-        "dev.zio" %% "zio-interop-cats" % "3.1.1.0"
+        "dev.zio" %% "zio-interop-cats" % "3.2.9.1"
     }
   }
 
-  case object io {
-    case object circe {
+  object io {
+    object circe {
       val `circe-generic` =
         dependency("generic")
 
@@ -30,8 +30,8 @@ object Dependencies {
     }
   }
 
-  case object org {
-    case object http4s {
+  object org {
+    object http4s {
       val `http4s-blaze-server` =
         dependency("blaze-server")
 
@@ -42,37 +42,37 @@ object Dependencies {
         dependency("dsl")
 
       private def dependency(artifact: String): ModuleID =
-        "org.http4s" %% s"http4s-$artifact" % "1.0.0-M23"
+        "org.http4s" %% s"http4s-$artifact" % "1.0.0-M32"
     }
 
-    case object scalacheck {
+    object scalacheck {
       val scalacheck =
         "org.scalacheck" %% "scalacheck" % "1.15.4"
     }
 
-    case object scalatest {
+    object scalatest {
       val scalatest =
-        "org.scalatest" %% "scalatest" % "3.2.9"
+        "org.scalatest" %% "scalatest" % "3.2.11"
     }
 
-    case object scalatestplus {
+    object scalatestplus {
       val `scalacheck-1-15` =
-        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0"
+        "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0"
     }
 
-    case object slf4j {
+    object slf4j {
       val `slf4j-simple` =
-        "org.slf4j" % "slf4j-simple" % "1.7.32"
+        "org.slf4j" % "slf4j-simple" % "1.7.36"
     }
 
-    case object tpolecat {
+    object tpolecat {
       val `skunk-core` =
-        "org.tpolecat" %% "skunk-core" % "0.2.0"
+        "org.tpolecat" %% "skunk-core" % "0.3.1"
     }
 
-    case object typelevel {
+    object typelevel {
       val `cats-core` =
-        "org.typelevel" %% "cats-core" % "2.6.1"
+        "org.typelevel" %% "cats-core" % "2.7.0"
 
       val `discipline-scalatest` =
         "org.typelevel" %% "discipline-scalatest" % "2.1.5"

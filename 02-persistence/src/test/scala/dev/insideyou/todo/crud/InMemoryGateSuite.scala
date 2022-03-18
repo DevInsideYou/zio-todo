@@ -4,14 +4,14 @@ package crud
 
 import zio.*
 
-final class InMemoryEntityGatewaySuite extends TestSuite:
+final class InMemoryGateSuite extends TestSuite:
   test("what's written should be read") {
     forAll { (data1: Todo.Data, data2: Todo.Data) =>
       val program: Task[Assertion] =
         for
-          entityGateway <- makeEntityGateway(existing = Vector.empty)
-          written <- entityGateway.createMany(Vector(data1, data2))
-          read <- entityGateway.readAll
+          gate <- makeGate(existing = Vector.empty)
+          written <- gate.createMany(Vector(data1, data2))
+          read <- gate.readAll
         yield
           written `shouldBe` read
 
@@ -25,9 +25,9 @@ final class InMemoryEntityGatewaySuite extends TestSuite:
     forAll { (existing: Todo.Existing[Int]) =>
       val program: Task[Unit] =
         for
-          entityGateway <- makeEntityGateway(existing = Vector.empty)
-          _ <- entityGateway.updateMany(Vector(existing))
-          _ <- entityGateway.readAll
+          gate <- makeGate(existing = Vector.empty)
+          _ <- gate.updateMany(Vector(existing))
+          _ <- gate.readAll
         yield ()
 
       noException `should` be `thrownBy` program
@@ -38,7 +38,7 @@ final class InMemoryEntityGatewaySuite extends TestSuite:
     }
   }
 
-  private def makeEntityGateway(
+  private def makeGate(
       existing: Vector[Todo.Existing[Int]]
-    ): UIO[EntityGateway[Any, Throwable, Int]] =
-    Ref.make(existing).map(InMemoryEntityGateway.make)
+    ): UIO[Gate[Any, Throwable, Int]] =
+    Ref.make(existing).map(InMemoryGate.make)

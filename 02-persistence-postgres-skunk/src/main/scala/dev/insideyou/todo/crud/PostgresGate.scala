@@ -4,8 +4,8 @@ package crud
 
 import zio.*
 
-object PostgresEntityGateway:
-  def make(resource: RManaged[ZEnv, skunk.Session[Z]]): UIO[EntityGateway[ZEnv, Throwable, UUID]] =
+object PostgresGate:
+  def make(resource: RManaged[ZEnv, skunk.Session[Z]]): UIO[Gate[ZEnv, Throwable, UUID]] =
     ZIO.succeed {
       new:
         override def createMany(todos: Vector[Todo.Data]): Z[Vector[Todo.Existing[UUID]]] =

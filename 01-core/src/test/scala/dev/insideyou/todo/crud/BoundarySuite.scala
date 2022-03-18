@@ -8,19 +8,21 @@ final class BoundarySuite extends TestSuite:
   import BoundarySuite.*
 
   test("description should be trimmed") {
-    val entityGateway: EntityGateway[Any, Nothing, Unit] =
-      new FakeEntityGateway[Unit]:
-        override def createMany(todos: Vector[Todo.Data]): UIO[Vector[Todo.Existing[Unit]]] =
-          ZIO.succeed {
-            todos.map { data =>
-              Todo.Existing((), data)
+    val boundary =
+      makeBoundary {
+        new:
+          override def createMany(todos: Vector[Todo.Data]): UIO[Vector[Todo.Existing[Unit]]] =
+            ZIO.succeed {
+              todos.map { data =>
+                Todo.Existing((), data)
+              }
             }
-          }
+      }
 
-    val boundary: Boundary[Any, Throwable, Unit] =
-      Boundary.make(entityGateway)
+    forAll { (dataG: Todo.Data) =>
+      val data =
+        dataG.withUpdatedDescription(s"  ${dataG.description}  ")
 
-    forAll { (data: Todo.Data) =>
       Runtime.default.unsafeRun {
         boundary.createOne(data).map { todo =>
           todo.description `shouldBe` data.description.trim
@@ -29,27 +31,28 @@ final class BoundarySuite extends TestSuite:
     }
   }
 
-  test("readByDescription should not always call gateway.readByDescription") {
+  test("readByDescription should not always call gate.readByDescription") {
     var wasCalled = false
 
-    val entityGateway: EntityGateway[Any, Nothing, Unit] =
-      new FakeEntityGateway[Unit]:
-        override def readManyByDescription(description: String): UIO[Vector[Todo.Existing[Unit]]] =
-          ZIO.succeed {
-            wasCalled = true
-
-            Vector.empty
-          }
-
     val boundary: Boundary[Any, Throwable, Unit] =
-      Boundary.make(entityGateway)
+      makeBoundary {
+        new:
+          override def readManyByDescription(
+              description: String
+            ): UIO[Vector[Todo.Existing[Unit]]] =
+            ZIO.succeed {
+              wasCalled = true
+
+              Vector.empty
+            }
+      }
 
     Runtime.default.unsafeRun {
       for
         _ <- ZIO.succeed(When("the description is empty"))
         _ <- boundary.readManyByDescription("")
       yield
-        Then("gateway.readByDescription should NOT be called")
+        Then("gate.readByDescription should NOT be called")
         wasCalled `shouldBe` false
     }
 
@@ -60,15 +63,18 @@ final class BoundarySuite extends TestSuite:
             _ <- ZIO.succeed(When("the description is NOT empty"))
             _ <- boundary.readManyByDescription(description)
           yield
-            Then("gateway.readByDescription should be called")
+            Then("gate.readByDescription should be called")
             wasCalled `shouldBe` true
         }
       }
     }
   }
 
+  private def makeBoundary[TodoId](gate: FakeGate[TodoId]): Boundary[Any, Throwable, TodoId] =
+    Boundary.make(gate)
+
 object BoundarySuite:
-  private class FakeEntityGateway[TodoId] extends EntityGateway[Any, Nothing, TodoId]:
+  private class FakeGate[TodoId] extends Gate[Any, Nothing, TodoId]:
     override def createMany(todos: Vector[Todo.Data]): UIO[Vector[Todo.Existing[TodoId]]] = ???
 
     override def updateMany(

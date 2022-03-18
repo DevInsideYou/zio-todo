@@ -9,6 +9,6 @@ object DependencyGraph:
     Ref.make(Vector.empty[Todo.Existing[Int]]).flatMap { state =>
       Controller.make(
         pattern = pattern,
-        boundary = Boundary.make(InMemoryEntityGateway.make(state)),
+        boundary = Boundary.make(InMemoryGate.make(state)),
       )
     }

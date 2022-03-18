@@ -24,14 +24,14 @@ object Controller:
         override lazy val routes: HttpRoutes[Z] =
           Router {
             "todos" -> HttpRoutes.of {
-              case r @ POST -> Root     => r.as[request.Todo.Create].flatMap(create)
+              case r @ POST -> Root => r.as[request.Todo.Create].flatMap(create)
               case r @ PUT -> Root / id => r.as[request.Todo.Update].flatMap(update(id))
 
               case GET -> Root :? Description(d) => searchByDescription(d)
-              case GET -> Root                   => showAll
-              case GET -> Root / id              => searchById(id)
+              case GET -> Root => showAll
+              case GET -> Root / id => searchById(id)
 
-              case DELETE -> Root      => deleteAll
+              case DELETE -> Root => deleteAll
               case DELETE -> Root / id => delete(id)
             }
           }
@@ -207,8 +207,8 @@ object Controller:
             ifAllFields: (String, String) => B,
           ): B =
           this match
-            case Description(description)         => ifDescription(description)
-            case Deadline(deadline)               => ifDeadline(deadline)
+            case Description(description) => ifDescription(description)
+            case Deadline(deadline) => ifDeadline(deadline)
             case AllFields(description, deadline) => ifAllFields(description, deadline)
 
       object Update:

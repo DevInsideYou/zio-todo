@@ -85,10 +85,10 @@ final class ControllerSuite extends TestSuite:
           UsefulRandom(fakeN = 5),
         )
         _ <- controller.program
-        data <- ref.get
+        state <- ref.get
       yield
-        data.output `shouldBe` (expectedOutput :+ "\nUntil next time!\n")
-        data.errors `shouldBe` expectedErrors
+        state.output `shouldBe` (expectedOutput :+ "\nUntil next time!\n")
+        state.errors `shouldBe` expectedErrors
     }
 
 object ControllerSuite:
