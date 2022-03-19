@@ -23,8 +23,8 @@ final class ControllerSuite extends TestSuite:
   test("should create on 'c'") {
     val boundary: Boundary[Any, Throwable, Unit] =
       new FakeBoundary[Unit]:
-        override def createOne(todo: Todo.Data): Task[Todo.Existing[Unit]] =
-          ZIO.succeed(Todo.Existing((), todo))
+        override def createOne(todo: insert.Todo): Task[Todo[Unit]] =
+          ZIO.succeed(Todo((), todo.description, todo.deadline))
 
     assert(
       boundary,
@@ -36,7 +36,7 @@ final class ControllerSuite extends TestSuite:
   test("should keep running on error") {
     val boundary: Boundary[Any, Throwable, Unit] =
       new FakeBoundary[Unit]:
-        override def createOne(todo: Todo.Data): Task[Todo.Existing[Unit]] =
+        override def createOne(todo: insert.Todo): Task[Todo[Unit]] =
           ZIO.fail(RuntimeException("boom"))
 
     forAll { (description: String) =>
@@ -93,25 +93,24 @@ final class ControllerSuite extends TestSuite:
 
 object ControllerSuite:
   private class FakeBoundary[TodoId] extends Boundary[Any, Throwable, TodoId]:
-    override def createOne(todo: Todo.Data): Task[Todo.Existing[TodoId]] = ???
+    override def createOne(todo: insert.Todo): Task[Todo[TodoId]] = ???
+    override def createMany(todos: Vector[insert.Todo]): Task[Vector[Todo[TodoId]]] = ???
 
-    override def createMany(todos: Vector[Todo.Data]): Task[Vector[Todo.Existing[TodoId]]] = ???
-
-    override def readOneById(id: TodoId): Task[Option[Todo.Existing[TodoId]]] = ???
-    override def readManyById(ids: Vector[TodoId]): Task[Vector[Todo.Existing[TodoId]]] = ???
-    override def readManyByDescription(description: String): Task[Vector[Todo.Existing[TodoId]]] =
+    override def readOneById(id: TodoId): Task[Option[Todo[TodoId]]] = ???
+    override def readManyById(ids: Vector[TodoId]): Task[Vector[Todo[TodoId]]] = ???
+    override def readManyByDescription(description: String): Task[Vector[Todo[TodoId]]] =
       ???
 
-    override def readAll: Task[Vector[Todo.Existing[TodoId]]] = ???
+    override def readAll: Task[Vector[Todo[TodoId]]] = ???
 
-    override def updateOne(todo: Todo.Existing[TodoId]): Task[Todo.Existing[TodoId]] = ???
+    override def updateOne(todo: Todo[TodoId]): Task[Todo[TodoId]] = ???
 
     override def updateMany(
-        todos: Vector[Todo.Existing[TodoId]]
-      ): Task[Vector[Todo.Existing[TodoId]]] = ???
+        todos: Vector[Todo[TodoId]]
+      ): Task[Vector[Todo[TodoId]]] = ???
 
-    override def deleteOne(todo: Todo.Existing[TodoId]): Task[Unit] = ???
-    override def deleteMany(todos: Vector[Todo.Existing[TodoId]]): Task[Unit] = ???
+    override def deleteOne(todo: Todo[TodoId]): Task[Unit] = ???
+    override def deleteMany(todos: Vector[Todo[TodoId]]): Task[Unit] = ???
     override def deleteAll: Task[Unit] = ???
 
   private class FakeFancyConsole extends FancyConsole[Any, Nothing]:

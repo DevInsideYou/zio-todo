@@ -92,7 +92,7 @@ object Controller:
       private lazy val create: RIO[R, Unit] =
         descriptionPrompt.flatMap { description =>
           withDeadlinePrompt { deadline =>
-            boundary.createOne(Todo.Data(description, deadline)) *>
+            boundary.createOne(insert.Todo(description, deadline)) *>
               console.putSuccess("Successfully created the new todo.")
           }
         }
@@ -145,7 +145,7 @@ object Controller:
       private def withReadOne(
           id: TodoId
         )(
-          onFound: Todo.Existing[TodoId] => RIO[R, Unit]
+          onFound: Todo[TodoId] => RIO[R, Unit]
         ): RIO[R, Unit] =
         boundary
           .readOneById(id)
@@ -163,7 +163,7 @@ object Controller:
           .map(NonEmptyVector.fromVector)
           .flatMap(_.fold(displayNoTodosFoundMessage)(displayOneOrMany))
 
-      private def displayOneOrMany(todos: NonEmptyVector[Todo.Existing[TodoId]]): UIO[Unit] =
+      private def displayOneOrMany(todos: NonEmptyVector[Todo[TodoId]]): UIO[Unit] =
         val uxMatters =
           if todos.size == 1 then "todo" else "todos"
 
@@ -178,7 +178,7 @@ object Controller:
             .pipe(ZIO.foreach(_)(console.putStrLn))
             .unit
 
-      private def renderedWithPattern(todo: Todo.Existing[TodoId]): String =
+      private def renderedWithPattern(todo: Todo[TodoId]): String =
         val renderedId: String =
           inColor(todo.id.toString)(scala.Console.GREEN)
 

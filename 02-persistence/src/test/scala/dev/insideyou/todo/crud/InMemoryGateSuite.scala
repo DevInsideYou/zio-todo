@@ -6,7 +6,9 @@ import zio.*
 
 final class InMemoryGateSuite extends TestSuite:
   test("what's written should be read") {
-    forAll { (data1: Todo.Data, data2: Todo.Data) =>
+    import insert.given
+
+    forAll { (data1: insert.Todo, data2: insert.Todo) =>
       val program: Task[Assertion] =
         for
           gate <- makeGate(existing = Vector.empty)
@@ -15,14 +17,17 @@ final class InMemoryGateSuite extends TestSuite:
         yield
           written `shouldBe` read
 
-          read `shouldBe` Vector(Todo.Existing(0, data1), Todo.Existing(1, data2))
+          read `shouldBe` Vector(
+            Todo(0, data1.description, data1.deadline),
+            Todo(1, data2.description, data2.deadline),
+          )
 
       Runtime.default.unsafeRun(program)
     }
   }
 
   test("update nonexisting should throw") {
-    forAll { (existing: Todo.Existing[Int]) =>
+    forAll { (existing: Todo[Int]) =>
       val program: Task[Unit] =
         for
           gate <- makeGate(existing = Vector.empty)
@@ -39,6 +44,6 @@ final class InMemoryGateSuite extends TestSuite:
   }
 
   private def makeGate(
-      existing: Vector[Todo.Existing[Int]]
+      existing: Vector[Todo[Int]]
     ): UIO[Gate[Any, Throwable, Int]] =
     Ref.make(existing).map(InMemoryGate.make)

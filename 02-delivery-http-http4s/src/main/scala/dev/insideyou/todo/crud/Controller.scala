@@ -41,7 +41,7 @@ object Controller:
         private def create(payload: request.Todo.Create): Z[ZResponse] =
           withDeadlinePrompt(payload.deadline) { deadline =>
             boundary
-              .createOne(Todo.Data(payload.description, deadline))
+              .createOne(insert.Todo(payload.description, deadline))
               .map(response.Todo(pattern))
               .map(_.asJson)
               .flatMap(Created(_))
@@ -172,7 +172,7 @@ object Controller:
         private def withReadOne(
             id: TodoId
           )(
-            onFound: Todo.Existing[TodoId] => Z[ZResponse]
+            onFound: Todo[TodoId] => Z[ZResponse]
           ): Z[ZResponse] =
           boundary
             .readOneById(id)

@@ -11,21 +11,23 @@ final class BoundarySuite extends TestSuite:
     val boundary =
       makeBoundary {
         new:
-          override def createMany(todos: Vector[Todo.Data]): UIO[Vector[Todo.Existing[Unit]]] =
+          override def createMany(todos: Vector[insert.Todo]): UIO[Vector[crud.Todo[Unit]]] =
             ZIO.succeed {
-              todos.map { data =>
-                Todo.Existing((), data)
+              todos.map { todo =>
+                Todo((), todo.description, todo.deadline)
               }
             }
       }
 
-    forAll { (dataG: Todo.Data) =>
-      val data =
-        dataG.withUpdatedDescription(s"  ${dataG.description}  ")
+    import insert.given
+
+    forAll { (insertTodoG: insert.Todo) =>
+      val insertTodo =
+        insertTodoG.withUpdatedDescription(s"  ${insertTodoG.description}  ")
 
       Runtime.default.unsafeRun {
-        boundary.createOne(data).map { todo =>
-          todo.description `shouldBe` data.description.trim
+        boundary.createOne(insertTodo).map { todo =>
+          todo.description `shouldBe` insertTodo.description.trim
         }
       }
     }
@@ -39,7 +41,7 @@ final class BoundarySuite extends TestSuite:
         new:
           override def readManyByDescription(
               description: String
-            ): UIO[Vector[Todo.Existing[Unit]]] =
+            ): UIO[Vector[Todo[Unit]]] =
             ZIO.succeed {
               wasCalled = true
 
@@ -75,17 +77,12 @@ final class BoundarySuite extends TestSuite:
 
 object BoundarySuite:
   private class FakeGate[TodoId] extends Gate[Any, Nothing, TodoId]:
-    override def createMany(todos: Vector[Todo.Data]): UIO[Vector[Todo.Existing[TodoId]]] = ???
+    override def createMany(todos: Vector[insert.Todo]): UIO[Vector[Todo[TodoId]]] = ???
+    override def updateMany(todos: Vector[Todo[TodoId]]): UIO[Vector[Todo[TodoId]]] = ???
 
-    override def updateMany(
-        todos: Vector[Todo.Existing[TodoId]]
-      ): UIO[Vector[Todo.Existing[TodoId]]] = ???
+    override def readManyById(ids: Vector[TodoId]): UIO[Vector[Todo[TodoId]]] = ???
+    override def readManyByDescription(description: String): UIO[Vector[Todo[TodoId]]] = ???
+    override def readAll: UIO[Vector[Todo[TodoId]]] = ???
 
-    override def readManyById(ids: Vector[TodoId]): UIO[Vector[Todo.Existing[TodoId]]] = ???
-    override def readManyByDescription(description: String): UIO[Vector[Todo.Existing[TodoId]]] =
-      ???
-
-    override def readAll: UIO[Vector[Todo.Existing[TodoId]]] = ???
-
-    override def deleteMany(todos: Vector[Todo.Existing[TodoId]]): UIO[Unit] = ???
+    override def deleteMany(todos: Vector[Todo[TodoId]]): UIO[Unit] = ???
     override def deleteAll: UIO[Unit] = ???

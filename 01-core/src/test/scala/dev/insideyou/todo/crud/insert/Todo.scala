@@ -1,12 +1,12 @@
 package dev.insideyou
 package todo
 package crud
+package insert
 
-given [TodoId: Arbitrary]: Arbitrary[Todo[TodoId]] =
+given Arbitrary[Todo] =
   Arbitrary {
     for
-      todoId <- Arbitrary.arbitrary[TodoId]
       description <- Arbitrary.arbitrary[String]
       deadline <- Arbitrary.arbitrary[LocalDateTime]
-    yield Todo(todoId, description, deadline)
+    yield Todo(description, deadline)
   }

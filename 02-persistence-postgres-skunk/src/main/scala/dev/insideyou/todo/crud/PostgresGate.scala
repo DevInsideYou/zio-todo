@@ -8,26 +8,22 @@ object PostgresGate:
   def make(resource: RManaged[ZEnv, skunk.Session[Z]]): UIO[Gate[ZEnv, Throwable, UUID]] =
     ZIO.succeed {
       new:
-        override def createMany(todos: Vector[Todo.Data]): Z[Vector[Todo.Existing[UUID]]] =
+        override def createMany(todos: Vector[insert.Todo]): Z[Vector[Todo[UUID]]] =
           todos.traverse(insertOne)
 
-        override def updateMany(
-            todos: Vector[Todo.Existing[UUID]]
-          ): Z[Vector[Todo.Existing[UUID]]] =
+        override def updateMany(todos: Vector[Todo[UUID]]): Z[Vector[Todo[UUID]]] =
           todos.traverse(updateOne)
 
-        private def insertOne(data: Todo.Data): Z[Todo.Existing[UUID]] =
+        private def insertOne(todo: insert.Todo): Z[Todo[UUID]] =
           resource.use { session =>
             session
               .prepare(Statement.Insert.one)
               .use { preparedQuery =>
-                preparedQuery.unique(data)
+                preparedQuery.unique(todo)
               }
           }
 
-        private def updateOne(
-            todo: Todo.Existing[UUID]
-          ): Z[Todo.Existing[UUID]] =
+        private def updateOne(todo: Todo[UUID]): Z[Todo[UUID]] =
           resource.use { session =>
             session
               .prepare(Statement.Update.one)
@@ -36,9 +32,7 @@ object PostgresGate:
               }
           }
 
-        override def readManyById(
-            ids: Vector[UUID]
-          ): Z[Vector[Todo.Existing[UUID]]] =
+        override def readManyById(ids: Vector[UUID]): Z[Vector[Todo[UUID]]] =
           resource.use { session =>
             session
               .prepare(Statement.Select.many(ids.size))
@@ -50,7 +44,7 @@ object PostgresGate:
               }
           }
 
-        override def readManyByDescription(description: String): Z[Vector[Todo.Existing[UUID]]] =
+        override def readManyByDescription(description: String): Z[Vector[Todo[UUID]]] =
           resource.use { session =>
             session
               .prepare(Statement.Select.byDescription)
@@ -62,14 +56,14 @@ object PostgresGate:
               }
           }
 
-        override lazy val readAll: Z[Vector[Todo.Existing[UUID]]] =
+        override lazy val readAll: Z[Vector[Todo[UUID]]] =
           resource.use { session =>
             session
               .execute(Statement.Select.all)
               .map(_.to(Vector))
           }
 
-        override def deleteMany(todos: Vector[Todo.Existing[UUID]]): Z[Unit] =
+        override def deleteMany(todos: Vector[Todo[UUID]]): Z[Unit] =
           resource.use { session =>
             session
               .prepare(Statement.Delete.many(todos.size))

@@ -15,11 +15,11 @@ final case class Todo(
   )
 
 object Todo:
-  def apply[TodoId](pattern: DateTimeFormatter)(existing: crud.Todo.Existing[TodoId]): Todo =
+  def apply[TodoId](pattern: DateTimeFormatter)(existing: crud.Todo[TodoId]): Todo =
     Todo(
       id = existing.id.toString,
-      description = existing.data.description,
-      deadline = existing.data.deadline.format(pattern),
+      description = existing.description,
+      deadline = existing.deadline.format(pattern),
     )
 
   given Encoder[Todo] =

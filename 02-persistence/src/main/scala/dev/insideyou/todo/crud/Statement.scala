@@ -5,27 +5,27 @@ package crud
 import zio.*
 
 trait Statement[-R, +E, TodoId]:
-  def insertOne(data: Todo.Data): ZIO[R, E, Todo.Existing[TodoId]]
-  def updateOne(todo: Todo.Existing[TodoId]): ZIO[R, E, Todo.Existing[TodoId]]
-  def selectAll: ZIO[R, E, Vector[Todo.Existing[TodoId]]]
-  def deleteMany(todos: Vector[Todo.Existing[TodoId]]): ZIO[R, E, Unit]
+  def insertOne(todo: insert.Todo): ZIO[R, E, Todo[TodoId]]
+  def updateOne(todo: Todo[TodoId]): ZIO[R, E, Todo[TodoId]]
+  def selectAll: ZIO[R, E, Vector[Todo[TodoId]]]
+  def deleteMany(todos: Vector[Todo[TodoId]]): ZIO[R, E, Unit]
   def deleteAll: ZIO[R, E, Unit]
 
 object Statement:
-  def make(state: Ref[Vector[Todo.Existing[Int]]]): Statement[Any, Throwable, Int] =
+  def make(state: Ref[Vector[Todo[Int]]]): Statement[Any, Throwable, Int] =
     new:
-      override lazy val selectAll: Task[Vector[Todo.Existing[Int]]] =
+      override lazy val selectAll: Task[Vector[Todo[Int]]] =
         state.get
 
       private lazy val nextId: Task[Int] =
         selectAll.map(_.size)
 
-      override def insertOne(data: Todo.Data): Task[Todo.Existing[Int]] =
+      override def insertOne(todo: insert.Todo): Task[Todo[Int]] =
         nextId
-          .map(new Todo.Existing(_, data))
+          .map(new Todo(_, todo.description, todo.deadline))
           .flatMap(created => state.modify(s => created -> (s :+ created)))
 
-      override def updateOne(todo: Todo.Existing[Int]): Task[Todo.Existing[Int]] =
+      override def updateOne(todo: Todo[Int]): Task[Todo[Int]] =
         state.get.flatMap { s =>
           if s.exists(_.id === todo.id) then
             state.modify(s => todo -> (s.filterNot(_.id === todo.id) :+ todo))
@@ -35,7 +35,7 @@ object Statement:
             )
         }
 
-      override def deleteMany(todos: Vector[Todo.Existing[Int]]): Task[Unit] =
+      override def deleteMany(todos: Vector[Todo[Int]]): Task[Unit] =
         state.update(_.filterNot(todo => todos.map(_.id).contains(todo.id)))
 
       override lazy val deleteAll: Task[Unit] =

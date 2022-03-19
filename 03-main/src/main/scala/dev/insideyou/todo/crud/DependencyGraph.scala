@@ -10,7 +10,7 @@ object DependencyGraph:
       console: Console[Any, Nothing],
       random: Random[Any, Nothing],
     ): UIO[Controller[Any, Nothing]] =
-    Ref.make(Vector.empty[Todo.Existing[Int]]).map { state =>
+    Ref.make(Vector.empty[Todo[Int]]).map { state =>
       Controller.make(
         pattern = pattern,
         boundary = Boundary.make(InMemoryGate.make(state)),
