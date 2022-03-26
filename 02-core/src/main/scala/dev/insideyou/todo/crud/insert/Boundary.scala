@@ -5,11 +5,7 @@ package insert
 
 import zio.*
 
-trait Boundary[-R, +E, TodoId]:
-  def createOne(todo: Todo): ZIO[R, E, crud.Todo[TodoId]]
-  def createMany(todos: Vector[Todo]): ZIO[R, E, Vector[crud.Todo[TodoId]]]
-
-object Boundary:
+object BoundaryImpl:
   def make[R, TodoId](
       gate: Gate[R, Throwable, TodoId]
     ): Boundary[R, Throwable, TodoId] =

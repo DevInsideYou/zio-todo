@@ -33,7 +33,7 @@ final class BoundarySuite extends TestSuite:
   }
 
   private def makeBoundary[TodoId](gate: FakeGate[TodoId]): Boundary[Any, Throwable, TodoId] =
-    Boundary.make(gate)
+    BoundaryImpl.make(gate)
 
 object BoundarySuite:
   private class FakeGate[TodoId] extends Gate[Any, Nothing, TodoId]:

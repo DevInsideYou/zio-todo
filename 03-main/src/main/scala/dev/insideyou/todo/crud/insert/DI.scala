@@ -6,4 +6,4 @@ package insert
 import zio.*
 
 def boundary(db: Ref[Vector[crud.Todo[Int]]]): Boundary[Any, Throwable, Int] =
-  Boundary.make(InMemoryGate.make(db))
+  BoundaryImpl.make(InMemoryGate.make(db))

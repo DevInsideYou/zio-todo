@@ -11,6 +11,6 @@ def make(
   PostgresGate.make(resource).flatMap { gate =>
     Controller.make(
       pattern = pattern,
-      boundary = Boundary.make(gate),
+      boundary = BoundaryImpl.make(gate),
     )
   }

@@ -8,6 +8,7 @@ lazy val `todo` =
   project
     .in(file("."))
     .aggregate(
+      `core-headers`,
       core,
       `custom-zio-interop-cats`,
       delivery,
@@ -20,9 +21,9 @@ lazy val `todo` =
       `main-http-http4s-postgres-skunk`,
     )
 
-lazy val core =
+lazy val `core-headers` =
   project
-    .in(file("01-core"))
+    .in(file("01-core-headers"))
     .settings(commonSettings)
     .settings(commonDependencies)
     .settings(
@@ -42,16 +43,29 @@ lazy val `custom-zio-interop-cats` =
       )
     )
 
+lazy val core =
+  project
+    .in(file("02-core"))
+    .dependsOn(`core-headers` % Cctt)
+    .settings(commonSettings)
+    .settings(commonDependencies)
+    .settings(
+      libraryDependencies ++= Seq(
+        dev.zio.zio,
+        org.typelevel.`cats-core`,
+      )
+    )
+
 lazy val delivery =
   project
     .in(file("02-delivery"))
-    .dependsOn(core % Cctt)
+    .dependsOn(`core-headers` % Cctt)
     .settings(commonSettings)
 
 lazy val `delivery-http-http4s` =
   project
     .in(file("02-delivery-http-http4s"))
-    .dependsOn(core % Cctt)
+    .dependsOn(`core-headers` % Cctt)
     .dependsOn(`custom-zio-interop-cats` % Cctt)
     .settings(commonSettings)
     .settings(
@@ -67,13 +81,13 @@ lazy val `delivery-http-http4s` =
 lazy val persistence =
   project
     .in(file("02-persistence"))
-    .dependsOn(core % Cctt)
+    .dependsOn(`core-headers` % Cctt)
     .settings(commonSettings)
 
 lazy val `persistence-postgres-skunk` =
   project
     .in(file("02-persistence-postgres-skunk"))
-    .dependsOn(core % Cctt)
+    .dependsOn(`core-headers` % Cctt)
     .dependsOn(`custom-zio-interop-cats` % Cctt)
     .settings(commonSettings)
     .settings(
@@ -85,6 +99,7 @@ lazy val `persistence-postgres-skunk` =
 lazy val main =
   project
     .in(file("03-main"))
+    .dependsOn(core % Cctt)
     .dependsOn(delivery % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
@@ -93,6 +108,7 @@ lazy val main =
 lazy val `main-http-http4s` =
   project
     .in(file("03-main-http-http4s"))
+    .dependsOn(core % Cctt)
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
@@ -100,6 +116,7 @@ lazy val `main-http-http4s` =
 lazy val `main-postgres-skunk` =
   project
     .in(file("03-main-postgres-skunk"))
+    .dependsOn(core % Cctt)
     .dependsOn(delivery % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)
@@ -108,6 +125,7 @@ lazy val `main-postgres-skunk` =
 lazy val `main-http-http4s-postgres-skunk` =
   project
     .in(file("03-main-http-http4s-postgres-skunk"))
+    .dependsOn(core % Cctt)
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)

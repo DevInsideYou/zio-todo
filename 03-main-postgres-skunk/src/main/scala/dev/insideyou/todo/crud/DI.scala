@@ -13,7 +13,7 @@ def make(
   PostgresGate.make(resource).zipPar(insert.boundary(resource)).map { (gate, insertBoundary) =>
     Controller.make(
       pattern = pattern,
-      boundary = Boundary.make(gate),
+      boundary = BoundaryImpl.make(gate),
       insertBoundary = insertBoundary,
       console = FancyConsole.make(console),
       random = random,

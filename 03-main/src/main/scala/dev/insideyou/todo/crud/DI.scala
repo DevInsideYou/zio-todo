@@ -13,7 +13,7 @@ def make(
   ZIO.succeed {
     Controller.make(
       pattern = pattern,
-      boundary = Boundary.make(InMemoryGate.make(db)),
+      boundary = BoundaryImpl.make(InMemoryGate.make(db)),
       insertBoundary = insert.boundary(db),
       console = FancyConsole.make(console),
       random = random,
