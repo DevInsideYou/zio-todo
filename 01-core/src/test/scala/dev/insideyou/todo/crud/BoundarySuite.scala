@@ -7,32 +7,6 @@ import zio.*
 final class BoundarySuite extends TestSuite:
   import BoundarySuite.*
 
-  test("description should be trimmed") {
-    val boundary =
-      makeBoundary {
-        new:
-          override def createMany(todos: Vector[insert.Todo]): UIO[Vector[crud.Todo[Unit]]] =
-            ZIO.succeed {
-              todos.map { todo =>
-                Todo((), todo.description, todo.deadline)
-              }
-            }
-      }
-
-    import insert.given
-
-    forAll { (insertTodoG: insert.Todo) =>
-      val insertTodo =
-        insertTodoG.withUpdatedDescription(s"  ${insertTodoG.description}  ")
-
-      Runtime.default.unsafeRun {
-        boundary.createOne(insertTodo).map { todo =>
-          todo.description `shouldBe` insertTodo.description.trim
-        }
-      }
-    }
-  }
-
   test("readByDescription should not always call gate.readByDescription") {
     var wasCalled = false
 
@@ -77,7 +51,6 @@ final class BoundarySuite extends TestSuite:
 
 object BoundarySuite:
   private class FakeGate[TodoId] extends Gate[Any, Nothing, TodoId]:
-    override def createMany(todos: Vector[insert.Todo]): UIO[Vector[Todo[TodoId]]] = ???
     override def updateMany(todos: Vector[Todo[TodoId]]): UIO[Vector[Todo[TodoId]]] = ???
 
     override def readManyById(ids: Vector[TodoId]): UIO[Vector[Todo[TodoId]]] = ???

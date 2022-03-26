@@ -5,9 +5,6 @@ package crud
 import zio.*
 
 trait Boundary[-R, +E, TodoId]:
-  def createOne(todo: insert.Todo): ZIO[R, E, Todo[TodoId]]
-  def createMany(todos: Vector[insert.Todo]): ZIO[R, E, Vector[Todo[TodoId]]]
-
   def readOneById(id: TodoId): ZIO[R, E, Option[Todo[TodoId]]]
   def readManyById(ids: Vector[TodoId]): ZIO[R, E, Vector[Todo[TodoId]]]
   def readManyByDescription(description: String): ZIO[R, E, Vector[Todo[TodoId]]]
@@ -25,16 +22,6 @@ object Boundary:
       gate: Gate[R, Throwable, TodoId]
     ): Boundary[R, Throwable, TodoId] =
     new:
-      override def createOne(todo: insert.Todo): RIO[R, Todo[TodoId]] =
-        createMany(Vector(todo)).map(_.head)
-
-      override def createMany(todos: Vector[insert.Todo]): RIO[R, Vector[Todo[TodoId]]] =
-        gate.createMany(
-          todos.map { todo =>
-            todo.withUpdatedDescription(todo.description.trim.nn)
-          }
-        )
-
       override def updateMany(todos: Vector[Todo[TodoId]]): RIO[R, Vector[Todo[TodoId]]] =
         gate.updateMany(
           todos.map { todo =>

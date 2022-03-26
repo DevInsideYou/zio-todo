@@ -14,6 +14,7 @@ object Controller:
   def make[R, TodoId](
       pattern: DateTimeFormatter,
       boundary: Boundary[R, Throwable, TodoId],
+      insertBoundary: insert.Boundary[R, Throwable, TodoId],
       console: FancyConsole[Any, Nothing],
       random: Random[Any, Nothing],
     )(using
@@ -92,7 +93,7 @@ object Controller:
       private lazy val create: RIO[R, Unit] =
         descriptionPrompt.flatMap { description =>
           withDeadlinePrompt { deadline =>
-            boundary.createOne(insert.Todo(description, deadline)) *>
+            insertBoundary.createOne(insert.Todo(description, deadline)) *>
               console.putSuccess("Successfully created the new todo.")
           }
         }

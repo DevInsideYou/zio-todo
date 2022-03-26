@@ -10,9 +10,6 @@ object InMemoryGate:
       private lazy val statement: Statement[Any, Throwable, Int] =
         Statement.make(state)
 
-      override def createMany(todos: Vector[insert.Todo]): Task[Vector[Todo[Int]]] =
-        ZIO.foreach(todos)(statement.insertOne)
-
       override def updateMany(todos: Vector[Todo[Int]]): Task[Vector[Todo[Int]]] =
         ZIO.foreach(todos)(statement.updateOne)
 

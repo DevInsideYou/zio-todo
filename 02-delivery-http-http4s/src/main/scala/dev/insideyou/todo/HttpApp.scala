@@ -8,8 +8,8 @@ import org.http4s.server.middleware.Logger
 import zio.*
 
 object HttpApp:
-  def make(first: Controller, remaining: Controller*): HttpApp[Z] =
-    (first +: remaining)
+  def make(controllers: List[Controller]): HttpApp[Z] =
+    controllers
       .map(_.routes)
       .reduceLeft(_ <+> _)
       .pipe(routes => Router("api" -> routes))

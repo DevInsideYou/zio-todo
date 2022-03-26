@@ -5,7 +5,6 @@ package crud
 import zio.*
 
 trait Gate[-R, +E, TodoId]:
-  def createMany(todos: Vector[insert.Todo]): ZIO[R, E, Vector[Todo[TodoId]]]
   def updateMany(todos: Vector[Todo[TodoId]]): ZIO[R, E, Vector[Todo[TodoId]]]
 
   def readManyById(ids: Vector[TodoId]): ZIO[R, E, Vector[Todo[TodoId]]]

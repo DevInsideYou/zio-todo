@@ -8,20 +8,8 @@ object PostgresGate:
   def make(resource: RManaged[ZEnv, skunk.Session[Z]]): UIO[Gate[ZEnv, Throwable, UUID]] =
     ZIO.succeed {
       new:
-        override def createMany(todos: Vector[insert.Todo]): Z[Vector[Todo[UUID]]] =
-          todos.traverse(insertOne)
-
         override def updateMany(todos: Vector[Todo[UUID]]): Z[Vector[Todo[UUID]]] =
           todos.traverse(updateOne)
-
-        private def insertOne(todo: insert.Todo): Z[Todo[UUID]] =
-          resource.use { session =>
-            session
-              .prepare(Statement.Insert.one)
-              .use { preparedQuery =>
-                preparedQuery.unique(todo)
-              }
-          }
 
         private def updateOne(todo: Todo[UUID]): Z[Todo[UUID]] =
           resource.use { session =>

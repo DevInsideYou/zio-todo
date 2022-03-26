@@ -2,46 +2,45 @@ package dev.insideyou
 package todo
 package crud
 
-import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME as Pattern
-
 import zio.*
 
 final class ControllerSuite extends TestSuite:
-  import ControllerSuite.{ *, given }
+  import ControllerSuite.*
+  import ControllerSuite.given
 
   test("test suite should quit automatically") {
-    val boundary: Boundary[Any, Throwable, Unit] =
-      new FakeBoundary[Unit]
+    val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
+      new FakeInsertBoundary[Unit]
 
     assert(
-      boundary,
+      insertBoundary,
       input = List.empty,
       expectedOutput = Vector.empty,
     )
   }
 
   test("should create on 'c'") {
-    val boundary: Boundary[Any, Throwable, Unit] =
-      new FakeBoundary[Unit]:
-        override def createOne(todo: insert.Todo): Task[Todo[Unit]] =
-          ZIO.succeed(Todo((), todo.description, todo.deadline))
+    val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
+      new FakeInsertBoundary[Unit]:
+        override def createOne(todo: insert.Todo): Task[crud.Todo[Unit]] =
+          ZIO.succeed(crud.Todo((), todo.description, todo.deadline))
 
     assert(
-      boundary,
+      insertBoundary,
       input = List("c", "Invent time-travel!", "1955-11-5 18:00"),
       expectedOutput = Vector("Successfully created the new todo."),
     )
   }
 
   test("should keep running on error") {
-    val boundary: Boundary[Any, Throwable, Unit] =
-      new FakeBoundary[Unit]:
-        override def createOne(todo: insert.Todo): Task[Todo[Unit]] =
+    val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
+      new FakeInsertBoundary[Unit]:
+        override def createOne(todo: insert.Todo): Task[crud.Todo[Unit]] =
           ZIO.fail(RuntimeException("boom"))
 
     forAll { (description: String) =>
       assert(
-        boundary,
+        insertBoundary,
         input = List("c", description, "1955-11-5 18:00"),
         expectedOutput = Vector.empty,
         expectedErrors = Vector("boom"),
@@ -50,14 +49,14 @@ final class ControllerSuite extends TestSuite:
   }
 
   test("should yield an error if deadline does not match the required format") {
-    val boundary: Boundary[Any, Throwable, Unit] =
-      new FakeBoundary[Unit]
+    val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
+      new FakeInsertBoundary[Unit]
 
     forAll { (description: String, deadline: String) =>
       import scala.Console.*
 
       assert(
-        boundary,
+        insertBoundary,
         input = List("c", description, deadline),
         expectedOutput = Vector.empty,
         expectedErrors = Vector(
@@ -68,7 +67,7 @@ final class ControllerSuite extends TestSuite:
   }
 
   private def assert[TodoId](
-      boundary: Boundary[Any, Throwable, TodoId],
+      insertBoundary: insert.Boundary[Any, Throwable, TodoId],
       input: List[String],
       expectedOutput: Vector[String],
       expectedErrors: Vector[String] = Vector.empty,
@@ -79,10 +78,11 @@ final class ControllerSuite extends TestSuite:
       for
         ref <- Ref.make(UsefulConsole.State(input :+ "q"))
         controller = Controller.make(
-          Pattern,
-          boundary,
-          UsefulConsole(ref),
-          UsefulRandom(fakeN = 5),
+          pattern = null,
+          boundary = null,
+          insertBoundary = insertBoundary,
+          console = UsefulConsole(ref),
+          random = UsefulRandom(fakeN = 5),
         )
         _ <- controller.program
         state <- ref.get
@@ -92,26 +92,9 @@ final class ControllerSuite extends TestSuite:
     }
 
 object ControllerSuite:
-  private class FakeBoundary[TodoId] extends Boundary[Any, Throwable, TodoId]:
+  private class FakeInsertBoundary[TodoId] extends insert.Boundary[Any, Throwable, TodoId]:
     override def createOne(todo: insert.Todo): Task[Todo[TodoId]] = ???
     override def createMany(todos: Vector[insert.Todo]): Task[Vector[Todo[TodoId]]] = ???
-
-    override def readOneById(id: TodoId): Task[Option[Todo[TodoId]]] = ???
-    override def readManyById(ids: Vector[TodoId]): Task[Vector[Todo[TodoId]]] = ???
-    override def readManyByDescription(description: String): Task[Vector[Todo[TodoId]]] =
-      ???
-
-    override def readAll: Task[Vector[Todo[TodoId]]] = ???
-
-    override def updateOne(todo: Todo[TodoId]): Task[Todo[TodoId]] = ???
-
-    override def updateMany(
-        todos: Vector[Todo[TodoId]]
-      ): Task[Vector[Todo[TodoId]]] = ???
-
-    override def deleteOne(todo: Todo[TodoId]): Task[Unit] = ???
-    override def deleteMany(todos: Vector[Todo[TodoId]]): Task[Unit] = ???
-    override def deleteAll: Task[Unit] = ???
 
   private class FakeFancyConsole extends FancyConsole[Any, Nothing]:
     override def getStrLnTrimmedWithPrompt(prompt: String): UIO[String] = ???

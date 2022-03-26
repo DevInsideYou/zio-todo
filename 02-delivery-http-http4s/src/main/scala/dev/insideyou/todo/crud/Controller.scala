@@ -24,7 +24,6 @@ object Controller:
         override lazy val routes: HttpRoutes[Z] =
           Router {
             "todos" -> HttpRoutes.of {
-              case r @ POST -> Root => r.as[request.Todo.Create].flatMap(create)
               case r @ PUT -> Root / id => r.as[request.Todo.Update].flatMap(update(id))
 
               case GET -> Root :? Description(d) => searchByDescription(d)
@@ -38,34 +37,12 @@ object Controller:
 
         object Description extends QueryParamDecoderMatcher[String]("description")
 
-        private def create(payload: request.Todo.Create): Z[ZResponse] =
-          withDeadlinePrompt(payload.deadline) { deadline =>
-            boundary
-              .createOne(insert.Todo(payload.description, deadline))
-              .map(response.Todo(pattern))
-              .map(_.asJson)
-              .flatMap(Created(_))
-          }
-
         private def withDeadlinePrompt(
             deadline: String
           )(
             onSuccess: LocalDateTime => Z[ZResponse]
           ): Z[ZResponse] =
           toLocalDateTime(deadline).fold(BadRequest(_), onSuccess)
-
-        private def toLocalDateTime(input: String): Either[String, LocalDateTime] =
-          val formatter =
-            DateTimeFormatter.ofPattern(DeadlinePromptPattern)
-
-          val trimmedInput: String =
-            input.trim
-
-          Either
-            .catchNonFatal(LocalDateTime.parse(trimmedInput, formatter))
-            .leftMap { _ =>
-              s"$trimmedInput does not match the required format $DeadlinePromptPattern."
-            }
 
         private def update(id: String): request.Todo.Update => Z[ZResponse] =
           _.fold(updateDescription(id), updateDeadline(id), updateAllFields(id))
@@ -187,15 +164,6 @@ object Controller:
 
   object request:
     object Todo:
-      final type Create = Update.AllFields
-      final val Create: Update.AllFields.type = Update.AllFields
-
-      given Decoder[Create] =
-        deriveDecoder
-
-      given EntityDecoder[Z, Create] =
-        jsonOf
-
       enum Update:
         case Description(description: String)
         case Deadline(deadline: String)

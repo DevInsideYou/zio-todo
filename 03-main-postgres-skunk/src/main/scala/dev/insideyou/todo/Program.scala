@@ -8,10 +8,10 @@ object Program:
     SessionPool.make.use { resource =>
       for
         (console, random) <- Console.make.zipPar(Random.make)
-        controller <- crud.DependencyGraph.make(Pattern, console, random, resource)
+        controller <- crud.make(Pattern, console, random, resource)
         _ <- controller.program
       yield ()
     }
 
-  private lazy val Pattern =
+  private lazy val Pattern: DateTimeFormatter =
     DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy HH:mm")
