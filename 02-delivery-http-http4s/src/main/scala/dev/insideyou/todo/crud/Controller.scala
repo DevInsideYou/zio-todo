@@ -46,28 +46,23 @@ object Controller:
           _.fold(updateDescription(id), updateDeadline(id), updateAllFields(id))
 
         private def updateDescription(id: String)(description: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withReadOne(id): todo =>
               boundary
                 .updateOne(todo.withUpdatedDescription(description))
                 .map(response.Todo(pattern))
                 .map(_.asJson)
                 .flatMap(Ok(_))
-            }
-          }
 
         private def updateDeadline(id: String)(deadline: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withDeadlinePrompt(deadline) { deadline =>
-              withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withDeadlinePrompt(deadline): deadline =>
+              withReadOne(id): todo =>
                 boundary
                   .updateOne(todo.withUpdatedDeadline(deadline))
                   .map(response.Todo(pattern))
                   .map(_.asJson)
                   .flatMap(Ok(_))
-              }
-            }
-          }
 
         private def updateAllFields(
             id: String
@@ -91,52 +86,44 @@ object Controller:
             id: TodoId,
             deadline: LocalDateTime,
           ): Z[ZResponse] =
-          withReadOne(id) { todo =>
+          withReadOne(id): todo =>
             boundary
-              .updateOne(
+              .updateOne:
                 todo
                   .withUpdatedDescription(description)
                   .withUpdatedDeadline(deadline)
-              )
               .map(response.Todo(pattern))
               .map(_.asJson)
               .flatMap(Ok(_))
-          }
 
         private lazy val showAll: Z[ZResponse] =
-          boundary.readAll.flatMap { todos =>
+          boundary.readAll.flatMap: todos =>
             todos
               .sortBy(_.deadline)
               .map(response.Todo(pattern))
               .asJson
               .pipe(Ok(_))
-          }
 
         private def searchById(id: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withReadOne(id): todo =>
               todo
                 .pipe(response.Todo(pattern))
                 .pipe(_.asJson)
                 .pipe(Ok(_))
-            }
-          }
 
         private def searchByDescription(description: String): Z[ZResponse] =
-          boundary.readManyByDescription(description).flatMap { todos =>
+          boundary.readManyByDescription(description).flatMap: todos =>
             todos
               .map(response.Todo(pattern))
               .asJson
               .pipe(Ok(_))
-          }
 
         private def delete(id: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withReadOne(id): todo =>
               boundary.deleteOne(todo) >>
                 NoContent()
-            }
-          }
 
         private def withIdPrompt(id: String)(onValidId: TodoId => Z[ZResponse]): Z[ZResponse] =
           toId(id).fold(BadRequest(_), onValidId)

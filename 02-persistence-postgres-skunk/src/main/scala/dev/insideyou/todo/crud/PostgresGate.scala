@@ -12,62 +12,52 @@ object PostgresGate:
           todos.traverse(updateOne)
 
         private def updateOne(todo: Todo[UUID]): Z[Todo[UUID]] =
-          resource.use { session =>
+          resource.use: session =>
             session
               .prepare(Statement.Update.one)
-              .use { preparedQuery =>
+              .use: preparedQuery =>
                 preparedQuery.unique(todo)
-              }
-          }
 
         override def readManyById(ids: Vector[UUID]): Z[Vector[Todo[UUID]]] =
-          resource.use { session =>
+          resource.use: session =>
             session
               .prepare(Statement.Select.many(ids.size))
-              .use { preparedQuery =>
+              .use: preparedQuery =>
                 preparedQuery
                   .stream(ids.to(List), ChunkSizeInBytes)
                   .compile
                   .toVector
-              }
-          }
 
         override def readManyByDescription(description: String): Z[Vector[Todo[UUID]]] =
-          resource.use { session =>
+          resource.use: session =>
             session
               .prepare(Statement.Select.byDescription)
-              .use { preparedQuery =>
+              .use: preparedQuery =>
                 preparedQuery
                   .stream(description, ChunkSizeInBytes)
                   .compile
                   .toVector
-              }
-          }
 
         override lazy val readAll: Z[Vector[Todo[UUID]]] =
-          resource.use { session =>
+          resource.use: session =>
             session
               .execute(Statement.Select.all)
               .map(_.to(Vector))
-          }
 
         override def deleteMany(todos: Vector[Todo[UUID]]): Z[Unit] =
-          resource.use { session =>
+          resource.use: session =>
             session
               .prepare(Statement.Delete.many(todos.size))
-              .use { preparedCommand =>
+              .use: preparedCommand =>
                 preparedCommand
                   .execute(todos.to(List).map(_.id))
                   .void
-              }
-          }
 
         override lazy val deleteAll: Z[Unit] =
-          resource.use { session =>
+          resource.use: session =>
             session
               .execute(Statement.Delete.all)
               .void
-          }
 
   private lazy val ChunkSizeInBytes: Int =
     1024

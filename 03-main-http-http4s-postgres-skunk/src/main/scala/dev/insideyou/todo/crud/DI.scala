@@ -8,9 +8,8 @@ def make(
     pattern: DateTimeFormatter,
     resource: RManaged[ZEnv, skunk.Session[Z]],
   ): UIO[Controller] =
-  PostgresGate.make(resource).flatMap { gate =>
+  PostgresGate.make(resource).flatMap: gate =>
     Controller.make(
       pattern = pattern,
       boundary = BoundaryImpl.make(gate),
     )
-  }

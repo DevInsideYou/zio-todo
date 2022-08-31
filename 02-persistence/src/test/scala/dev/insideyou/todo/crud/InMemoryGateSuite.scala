@@ -6,7 +6,7 @@ import zio.*
 
 final class InMemoryGateSuite extends TestSuite:
   test("update nonexisting should throw"):
-    forAll { (existing: Todo[Int]) =>
+    forAll: (existing: Todo[Int]) =>
       val program: Task[Unit] =
         for
           gate <- makeGate(existing = Vector.empty)
@@ -16,10 +16,9 @@ final class InMemoryGateSuite extends TestSuite:
 
       noException `should` be `thrownBy` program
 
-      the[RuntimeException] thrownBy {
+      the[RuntimeException] `thrownBy`:
         Runtime.default.unsafeRunTask(program)
-      } `should` have `message` s"Failed to update todo: ${existing.id} because it didn't exist."
-    }
+      `should` have `message` s"Failed to update todo: ${existing.id} because it didn't exist."
 
   private def makeGate(existing: Vector[Todo[Int]]): UIO[Gate[Any, Throwable, Int]] =
     Ref.make(existing).map(InMemoryGate.make)

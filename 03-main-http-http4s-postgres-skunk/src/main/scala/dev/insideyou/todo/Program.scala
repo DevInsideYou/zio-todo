@@ -6,11 +6,10 @@ import skunk.Session
 
 object Program:
   lazy val make: Z[Unit] =
-    SessionPool.make.use { resource =>
+    SessionPool.make.use: resource =>
       makeControllers(resource)
         .flatMap(makeServer)
         .flatMap(_.serve)
-    }
 
   private def makeControllers(resource: RManaged[ZEnv, Session[Z]]): Z[List[Controller]] =
     List(

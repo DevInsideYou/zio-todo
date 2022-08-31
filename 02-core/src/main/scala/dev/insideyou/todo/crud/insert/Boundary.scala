@@ -14,8 +14,6 @@ object BoundaryImpl:
         createMany(Vector(todo)).map(_.head)
 
       override def createMany(todos: Vector[Todo]): RIO[R, Vector[crud.Todo[TodoId]]] =
-        gate.createMany(
-          todos.map { todo =>
+        gate.createMany:
+          todos.map: todo =>
             todo.withUpdatedDescription(todo.description.trim.nn)
-          }
-        )

@@ -14,19 +14,16 @@ final class BoundarySuite extends TestSuite:
         new:
           override def createMany(todos: Vector[Todo]): UIO[Vector[crud.Todo[Unit]]] =
             ZIO.succeed:
-              todos.map { todo =>
+              todos.map: todo =>
                 crud.Todo((), todo.description, todo.deadline)
-              }
 
-    forAll { (insertTodoG: Todo) =>
+    forAll: (insertTodoG: Todo) =>
       val insertTodo =
         insertTodoG.withUpdatedDescription(s"  ${insertTodoG.description}  ")
 
       Runtime.default.unsafeRun:
-        boundary.createOne(insertTodo).map { todo =>
+        boundary.createOne(insertTodo).map: todo =>
           todo.description `shouldBe` insertTodo.description.trim
-        }
-    }
 
   private def makeBoundary[TodoId](gate: FakeGate[TodoId]): Boundary[Any, Throwable, TodoId] =
     BoundaryImpl.make(gate)

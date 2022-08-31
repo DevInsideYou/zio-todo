@@ -41,7 +41,7 @@ object Controller:
           randomColor.map(inColor("─" * 100))
 
         val menu: UIO[String] =
-          hyphens.map { h =>
+          hyphens.map: h =>
             s"""|
                 |$h
                 |
@@ -57,7 +57,6 @@ object Controller:
                 |anything else       => show the main menu
                 |
                 |Please enter a command:""".stripMargin
-          }
 
         val prompt: UIO[String] =
           menu.flatMap(console.getStrLnTrimmedWithPrompt)
@@ -89,12 +88,10 @@ object Controller:
         console.getStrLnTrimmedWithPrompt("Please enter a description:")
 
       private lazy val create: RIO[R, Unit] =
-        descriptionPrompt.flatMap { description =>
-          withDeadlinePrompt { deadline =>
+        descriptionPrompt.flatMap: description =>
+          withDeadlinePrompt: deadline =>
             insertBoundary.createOne(insert.Todo(description, deadline)) *>
               console.putSuccess("Successfully created the new todo.")
-          }
-        }
 
       private def withDeadlinePrompt(
           onSuccess: LocalDateTime => RIO[R, Unit]
@@ -104,9 +101,8 @@ object Controller:
           .flatMap(_.fold(console.putErrLn, onSuccess))
 
       private lazy val deadlinePrompt: UIO[String] =
-        console.getStrLnTrimmedWithPrompt(
+        console.getStrLnTrimmedWithPrompt:
           s"Please enter a deadline in the following format $DeadlinePromptFormat:"
-        )
 
       private def toLocalDateTime(input: String): Either[String, LocalDateTime] =
         val formatter =
@@ -117,23 +113,20 @@ object Controller:
 
         Either
           .catchNonFatal(LocalDateTime.parse(trimmedInput, formatter))
-          .leftMap { _ =>
+          .leftMap: _ =>
             val renderedInput: String =
               inColor(trimmedInput)(scala.Console.YELLOW)
 
             s"\n$renderedInput does not match the required format $DeadlinePromptFormat."
-          }
 
       private lazy val idPrompt: UIO[String] =
         console.getStrLnTrimmedWithPrompt("Please enter the id:")
 
       private lazy val delete: RIO[R, Unit] =
-        withIdPrompt { id =>
-          withReadOne(id) { todo =>
+        withIdPrompt: id =>
+          withReadOne(id): todo =>
             boundary.deleteOne(todo) *>
               console.putSuccess("Successfully deleted the todo.")
-          }
-        }
 
       private def withIdPrompt(onValidId: TodoId => RIO[R, Unit]): RIO[R, Unit] =
         idPrompt.map(toId).flatMap(_.fold(console.putErrLn, onValidId))
@@ -196,31 +189,23 @@ object Controller:
           .flatMap(_.fold(displayNoTodosFoundMessage)(displayOneOrMany))
 
       private lazy val searchById: RIO[R, Unit] =
-        withIdPrompt { id =>
-          withReadOne(id) { todo =>
+        withIdPrompt: id =>
+          withReadOne(id): todo =>
             displayOneOrMany(NonEmptyVector.of(todo))
-          }
-        }
 
       private lazy val updateDescription: RIO[R, Unit] =
-        withIdPrompt { id =>
-          withReadOne(id) { todo =>
-            descriptionPrompt.flatMap { description =>
+        withIdPrompt: id =>
+          withReadOne(id): todo =>
+            descriptionPrompt.flatMap: description =>
               boundary.updateOne(todo.withUpdatedDescription(description)) *>
                 console.putSuccess("Successfully updated the description.")
-            }
-          }
-        }
 
       private lazy val updateDeadline: RIO[R, Unit] =
-        withIdPrompt { id =>
-          withReadOne(id) { todo =>
-            withDeadlinePrompt { deadline =>
+        withIdPrompt: id =>
+          withReadOne(id): todo =>
+            withDeadlinePrompt: deadline =>
               boundary.updateOne(todo.withUpdatedDeadline(deadline)) *>
                 console.putSuccess("Successfully updated the deadline.")
-            }
-          }
-        }
 
       private lazy val exit: UIO[Unit] =
         console.putStrLn("\nUntil next time!\n")

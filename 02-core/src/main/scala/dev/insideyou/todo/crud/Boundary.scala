@@ -10,11 +10,9 @@ object BoundaryImpl:
     ): Boundary[R, Throwable, TodoId] =
     new:
       override def updateMany(todos: Vector[Todo[TodoId]]): RIO[R, Vector[Todo[TodoId]]] =
-        gate.updateMany(
-          todos.map { todo =>
+        gate.updateMany:
+          todos.map: todo =>
             todo.withUpdatedDescription(todo.description.trim.nn)
-          }
-        )
 
       override def readOneById(id: TodoId): RIO[R, Option[Todo[TodoId]]] =
         readManyById(Vector(id)).map(_.headOption)

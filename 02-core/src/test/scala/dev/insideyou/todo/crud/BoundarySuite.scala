@@ -29,7 +29,7 @@ final class BoundarySuite extends TestSuite:
         Then("gate.readByDescription should NOT be called")
         wasCalled `shouldBe` false
 
-    forAll(MinSuccessful(1)) { (description: String) =>
+    forAll(MinSuccessful(1)): (description: String) =>
       whenever(description.nonEmpty):
         Runtime.default.unsafeRun:
           for
@@ -38,7 +38,6 @@ final class BoundarySuite extends TestSuite:
           yield
             Then("gate.readByDescription should be called")
             wasCalled `shouldBe` true
-    }
 
   private def makeBoundary[TodoId](gate: FakeGate[TodoId]): Boundary[Any, Throwable, TodoId] =
     BoundaryImpl.make(gate)

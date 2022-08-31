@@ -7,7 +7,7 @@ import zio.*
 
 final class InMemoryGateSuite extends TestSuite:
   test("what's written should be read"):
-    forAll { (todo1: Todo, todo2: Todo) =>
+    forAll: (todo1: Todo, todo2: Todo) =>
       val program: Task[Assertion] =
         for
           (gate, crudGate) <- makeGates(existing = Vector.empty)
@@ -22,11 +22,9 @@ final class InMemoryGateSuite extends TestSuite:
           )
 
       Runtime.default.unsafeRun(program)
-    }
 
   private def makeGates(
       existing: Vector[crud.Todo[Int]]
     ): UIO[(Gate[Any, Throwable, Int], crud.Gate[Any, Throwable, Int])] =
-    Ref.make(existing).map { state =>
+    Ref.make(existing).map: state =>
       InMemoryGate.make(state) -> crud.InMemoryGate.make(state)
-    }

@@ -28,13 +28,12 @@ object Controller:
               case r @ POST -> Root => r.as[request.Todo.Create].flatMap(create)
 
         private def create(payload: request.Todo.Create): Z[ZResponse] =
-          withDeadlinePrompt(payload.deadline) { deadline =>
+          withDeadlinePrompt(payload.deadline): deadline =>
             boundary
               .createOne(Todo(payload.description, deadline))
               .map(response.Todo(pattern))
               .map(_.asJson)
               .flatMap(Created(_))
-          }
 
         private def withDeadlinePrompt(
             deadline: String

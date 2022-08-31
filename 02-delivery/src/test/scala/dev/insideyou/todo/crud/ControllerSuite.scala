@@ -36,31 +36,28 @@ final class ControllerSuite extends TestSuite:
         override def createOne(todo: insert.Todo): Task[crud.Todo[Unit]] =
           ZIO.fail(RuntimeException("boom"))
 
-    forAll { (description: String) =>
+    forAll: (description: String) =>
       assert(
         insertBoundary,
         input = List("c", description, "1955-11-5 18:00"),
         expectedOutput = Vector.empty,
         expectedErrors = Vector("boom"),
       )
-    }
 
   test("should yield an error if deadline does not match the required format"):
     val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
       new FakeInsertBoundary[Unit]
 
-    forAll { (description: String, deadline: String) =>
+    forAll: (description: String, deadline: String) =>
       import scala.Console.*
 
       assert(
         insertBoundary,
         input = List("c", description, deadline),
         expectedOutput = Vector.empty,
-        expectedErrors = Vector(
+        expectedErrors = Vector:
           s"\n$YELLOW${deadline.trim}$RESET does not match the required format ${MAGENTA}yyyy-M-d H:m$RESET."
-        ),
       )
-    }
 
   private def assert[TodoId](
       insertBoundary: insert.Boundary[Any, Throwable, TodoId],
@@ -113,24 +110,21 @@ object ControllerSuite:
       ref: Ref[UsefulConsole.State]
     ) extends FakeFancyConsole:
     override def getStrLnTrimmedWithPrompt(prompt: String): UIO[String] =
-      ref.modify { state =>
+      ref.modify: state =>
         val head :: tail = state.input: @unchecked
 
         head -> state.copy(input = tail)
-      }
 
     override def putStrLn(line: String): UIO[Unit] =
-      ref.update { state =>
+      ref.update: state =>
         state.copy(output = state.output :+ line)
-      }
 
     override def putSuccess(line: String): UIO[Unit] =
       putStrLn(line)
 
     override def putErrLn(line: String): UIO[Unit] =
-      ref.update { state =>
+      ref.update: state =>
         state.copy(errors = state.errors :+ line)
-      }
 
   object UsefulConsole:
     final case class State(

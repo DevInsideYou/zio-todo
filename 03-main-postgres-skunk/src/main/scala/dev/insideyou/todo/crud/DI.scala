@@ -10,7 +10,7 @@ def make(
     random: Random[Any, Nothing],
     resource: RManaged[ZEnv, skunk.Session[Z]],
   ): UIO[Controller[ZEnv, Nothing]] =
-  PostgresGate.make(resource).zipPar(insert.boundary(resource)).map { (gate, insertBoundary) =>
+  PostgresGate.make(resource).zipPar(insert.boundary(resource)).map: (gate, insertBoundary) =>
     Controller.make(
       pattern = pattern,
       boundary = BoundaryImpl.make(gate),
@@ -18,4 +18,3 @@ def make(
       console = FancyConsole.make(console),
       random = random,
     )
-  }

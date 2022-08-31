@@ -13,10 +13,8 @@ object PostgresGate:
           todos.traverse(insertOne)
 
         private def insertOne(todo: Todo): Z[crud.Todo[UUID]] =
-          resource.use { session =>
+          resource.use: session =>
             session
               .prepare(Statement.Insert.one)
-              .use { preparedQuery =>
+              .use: preparedQuery =>
                 preparedQuery.unique(todo)
-              }
-          }

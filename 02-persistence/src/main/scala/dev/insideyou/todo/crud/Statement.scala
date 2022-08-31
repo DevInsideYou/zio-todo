@@ -17,14 +17,12 @@ object Statement:
         state.get
 
       override def updateOne(todo: Todo[Int]): Task[Todo[Int]] =
-        state.get.flatMap { s =>
+        state.get.flatMap: s =>
           if s.exists(_.id === todo.id) then
             state.modify(s => todo -> (s.filterNot(_.id === todo.id) :+ todo))
           else
-            ZIO.fail(
+            ZIO.fail:
               RuntimeException(s"Failed to update todo: ${todo.id} because it didn't exist.")
-            )
-        }
 
       override def deleteMany(todos: Vector[Todo[Int]]): Task[Unit] =
         state.update(_.filterNot(todo => todos.map(_.id).contains(todo.id)))

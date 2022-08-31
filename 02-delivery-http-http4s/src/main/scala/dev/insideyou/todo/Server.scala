@@ -15,7 +15,7 @@ object Server:
     ZIO.succeed:
       new:
         override lazy val serve: Z[Unit] =
-          ZIO.runtime.flatMap { runtime =>
+          ZIO.runtime.flatMap: runtime =>
             BlazeServerBuilder[Z]
               .withExecutionContext(runtime.platform.executor.asEC)
               .bindHttp()
@@ -23,4 +23,3 @@ object Server:
               .serve
               .compile
               .drain
-          }
