@@ -7,7 +7,7 @@ import zio.*
 
 object PostgresGate:
   def make(resource: RManaged[ZEnv, skunk.Session[Z]]): UIO[Gate[ZEnv, Throwable, UUID]] =
-    ZIO.succeed {
+    ZIO.succeed:
       new:
         override def createMany(todos: Vector[Todo]): Z[Vector[crud.Todo[UUID]]] =
           todos.traverse(insertOne)
@@ -20,4 +20,3 @@ object PostgresGate:
                 preparedQuery.unique(todo)
               }
           }
-    }

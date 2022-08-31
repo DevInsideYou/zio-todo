@@ -19,11 +19,11 @@ object Controller:
     )(using
       parse: Parse[String, TodoId]
     ): UIO[Controller] =
-    ZIO.succeed {
+    ZIO.succeed:
       new Controller with Http4sDsl[Z]:
         override lazy val routes: HttpRoutes[Z] =
-          Router {
-            "todos" -> HttpRoutes.of {
+          Router:
+            "todos" -> HttpRoutes.of:
               case r @ PUT -> Root / id => r.as[request.Todo.Update].flatMap(update(id))
 
               case GET -> Root :? Description(d) => searchByDescription(d)
@@ -32,8 +32,6 @@ object Controller:
 
               case DELETE -> Root => deleteAll
               case DELETE -> Root / id => delete(id)
-            }
-          }
 
         object Description extends QueryParamDecoderMatcher[String]("description")
 
@@ -160,7 +158,6 @@ object Controller:
 
         private lazy val deleteAll: Z[ZResponse] =
           boundary.deleteAll >> NoContent()
-    }
 
   object request:
     object Todo:

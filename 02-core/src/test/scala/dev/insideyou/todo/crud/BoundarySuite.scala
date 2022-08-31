@@ -7,44 +7,38 @@ import zio.*
 final class BoundarySuite extends TestSuite:
   import BoundarySuite.*
 
-  test("readByDescription should not always call gate.readByDescription") {
+  test("readByDescription should not always call gate.readByDescription"):
     var wasCalled = false
 
     val boundary: Boundary[Any, Throwable, Unit] =
-      makeBoundary {
+      makeBoundary:
         new:
           override def readManyByDescription(
               description: String
             ): UIO[Vector[Todo[Unit]]] =
-            ZIO.succeed {
+            ZIO.succeed:
               wasCalled = true
 
               Vector.empty
-            }
-      }
 
-    Runtime.default.unsafeRun {
+    Runtime.default.unsafeRun:
       for
         _ <- ZIO.succeed(When("the description is empty"))
         _ <- boundary.readManyByDescription("")
       yield
         Then("gate.readByDescription should NOT be called")
         wasCalled `shouldBe` false
-    }
 
     forAll(MinSuccessful(1)) { (description: String) =>
-      whenever(description.nonEmpty) {
-        Runtime.default.unsafeRun {
+      whenever(description.nonEmpty):
+        Runtime.default.unsafeRun:
           for
             _ <- ZIO.succeed(When("the description is NOT empty"))
             _ <- boundary.readManyByDescription(description)
           yield
             Then("gate.readByDescription should be called")
             wasCalled `shouldBe` true
-        }
-      }
     }
-  }
 
   private def makeBoundary[TodoId](gate: FakeGate[TodoId]): Boundary[Any, Throwable, TodoId] =
     BoundaryImpl.make(gate)

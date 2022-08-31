@@ -67,7 +67,7 @@ object Controller:
             Set("e", "q", "exit", "quit")(s)
 
         prompt
-          .flatMap {
+          .flatMap:
             case "c" => create.as(true)
             case "d" => delete.as(true)
             case "da" => deleteAll.as(true)
@@ -78,11 +78,9 @@ object Controller:
             case "udl" => updateDeadline.as(true)
             case Exit() => exit.as(false)
             case _ => ZIO.succeed(true)
-          }
-          .catchAll {
+          .catchAll:
             case NonFatal(throwable) =>
               console.putErrLn(throwable.getMessage).as(true)
-          }
           .repeatWhile(identity)
           .unit
       end program

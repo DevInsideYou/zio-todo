@@ -20,14 +20,12 @@ object Controller:
     )(using
       parse: Parse[String, TodoId]
     ): UIO[Controller] =
-    ZIO.succeed {
+    ZIO.succeed:
       new Controller with Http4sDsl[Z]:
         override lazy val routes: HttpRoutes[Z] =
-          Router {
-            "todos" -> HttpRoutes.of {
+          Router:
+            "todos" -> HttpRoutes.of:
               case r @ POST -> Root => r.as[request.Todo.Create].flatMap(create)
-            }
-          }
 
         private def create(payload: request.Todo.Create): Z[ZResponse] =
           withDeadlinePrompt(payload.deadline) { deadline =>
@@ -44,7 +42,6 @@ object Controller:
             onSuccess: LocalDateTime => Z[ZResponse]
           ): Z[ZResponse] =
           toLocalDateTime(deadline).fold(BadRequest(_), onSuccess)
-    }
 
   object request:
     object Todo:

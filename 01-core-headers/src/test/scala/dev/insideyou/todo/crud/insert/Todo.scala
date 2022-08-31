@@ -4,9 +4,8 @@ package crud
 package insert
 
 given Arbitrary[Todo] =
-  Arbitrary {
+  Arbitrary:
     for
       description <- Arbitrary.arbitrary[String]
       deadline <- Arbitrary.arbitrary[LocalDateTime]
     yield Todo(description, deadline)
-  }

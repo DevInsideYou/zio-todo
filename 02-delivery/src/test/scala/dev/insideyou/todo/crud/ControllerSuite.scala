@@ -8,7 +8,7 @@ final class ControllerSuite extends TestSuite:
   import ControllerSuite.*
   import ControllerSuite.given
 
-  test("test suite should quit automatically") {
+  test("test suite should quit automatically"):
     val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
       new FakeInsertBoundary[Unit]
 
@@ -17,9 +17,8 @@ final class ControllerSuite extends TestSuite:
       input = List.empty,
       expectedOutput = Vector.empty,
     )
-  }
 
-  test("should create on 'c'") {
+  test("should create on 'c'"):
     val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
       new FakeInsertBoundary[Unit]:
         override def createOne(todo: insert.Todo): Task[crud.Todo[Unit]] =
@@ -30,9 +29,8 @@ final class ControllerSuite extends TestSuite:
       input = List("c", "Invent time-travel!", "1955-11-5 18:00"),
       expectedOutput = Vector("Successfully created the new todo."),
     )
-  }
 
-  test("should keep running on error") {
+  test("should keep running on error"):
     val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
       new FakeInsertBoundary[Unit]:
         override def createOne(todo: insert.Todo): Task[crud.Todo[Unit]] =
@@ -46,9 +44,8 @@ final class ControllerSuite extends TestSuite:
         expectedErrors = Vector("boom"),
       )
     }
-  }
 
-  test("should yield an error if deadline does not match the required format") {
+  test("should yield an error if deadline does not match the required format"):
     val insertBoundary: insert.Boundary[Any, Throwable, Unit] =
       new FakeInsertBoundary[Unit]
 
@@ -64,7 +61,6 @@ final class ControllerSuite extends TestSuite:
         ),
       )
     }
-  }
 
   private def assert[TodoId](
       insertBoundary: insert.Boundary[Any, Throwable, TodoId],
@@ -74,7 +70,7 @@ final class ControllerSuite extends TestSuite:
     )(using
       parse: Parse[String, TodoId]
     ): Assertion =
-    Runtime.default.unsafeRun {
+    Runtime.default.unsafeRun:
       for
         ref <- Ref.make(UsefulConsole.State(input :+ "q"))
         controller = Controller.make(
@@ -89,7 +85,6 @@ final class ControllerSuite extends TestSuite:
       yield
         state.output `shouldBe` (expectedOutput :+ "\nUntil next time!\n")
         state.errors `shouldBe` expectedErrors
-    }
 
 object ControllerSuite:
   private class FakeInsertBoundary[TodoId] extends insert.Boundary[Any, Throwable, TodoId]:

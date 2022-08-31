@@ -6,7 +6,7 @@ import zio.*
 
 object PostgresGate:
   def make(resource: RManaged[ZEnv, skunk.Session[Z]]): UIO[Gate[ZEnv, Throwable, UUID]] =
-    ZIO.succeed {
+    ZIO.succeed:
       new:
         override def updateMany(todos: Vector[Todo[UUID]]): Z[Vector[Todo[UUID]]] =
           todos.traverse(updateOne)
@@ -68,7 +68,6 @@ object PostgresGate:
               .execute(Statement.Delete.all)
               .void
           }
-    }
 
   private lazy val ChunkSizeInBytes: Int =
     1024

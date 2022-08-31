@@ -10,7 +10,7 @@ def make(
     random: Random[Any, Nothing],
     db: Ref[Vector[crud.Todo[Int]]],
   ): UIO[Controller[Any, Nothing]] =
-  ZIO.succeed {
+  ZIO.succeed:
     Controller.make(
       pattern = pattern,
       boundary = BoundaryImpl.make(InMemoryGate.make(db)),
@@ -18,4 +18,3 @@ def make(
       console = FancyConsole.make(console),
       random = random,
     )
-  }

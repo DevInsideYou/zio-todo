@@ -12,7 +12,7 @@ trait Server[-R, +E]:
 
 object Server:
   def make(httpApp: HttpApp[Z]): UIO[Server[ZEnv, Throwable]] =
-    ZIO.succeed {
+    ZIO.succeed:
       new:
         override lazy val serve: Z[Unit] =
           ZIO.runtime.flatMap { runtime =>
@@ -24,4 +24,3 @@ object Server:
               .compile
               .drain
           }
-    }

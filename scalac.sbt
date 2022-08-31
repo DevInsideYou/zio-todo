@@ -4,6 +4,7 @@ ThisBuild / scalacOptions ++=
     "-explain",
     "-feature",
     "-language:implicitConversions",
+    "-language:experimental.fewerBraces",
     "-unchecked",
     "-Xfatal-warnings",
     // "-Yexplicit-nulls", // experimental (I've seen it cause issues with circe)
