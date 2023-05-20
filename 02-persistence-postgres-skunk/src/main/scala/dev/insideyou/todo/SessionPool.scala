@@ -8,12 +8,13 @@ import skunk.Session
 import zio.*
 
 object SessionPool:
-  lazy val make: RManaged[ZEnv, RManaged[ZEnv, Session[Z]]] =
+  @annotation.nowarn("cat=deprecation")
+  lazy val make =
     given std.Console[Z] =
       std.Console.make
 
     Session
-      .pooled(
+      .pooled[Z](
         host = "localhost",
         port = 5432,
         user = "user",
@@ -23,4 +24,4 @@ object SessionPool:
         debug = false,
       )
       .toManagedZIO
-      .map(_.toManagedZIO)
+      .flatMap(_.toManagedZIO)

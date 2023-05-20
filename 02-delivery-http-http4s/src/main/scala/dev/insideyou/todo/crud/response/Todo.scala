@@ -9,10 +9,10 @@ import org.http4s.*
 import org.http4s.circe.*
 
 final case class Todo(
-    id: String,
-    description: String,
-    deadline: String,
-  )
+  id: String,
+  description: String,
+  deadline: String,
+)
 
 object Todo:
   def apply[TodoId](pattern: DateTimeFormatter)(existing: crud.Todo.Existing[TodoId]): Todo =

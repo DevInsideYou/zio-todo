@@ -5,15 +5,16 @@ package crud
 import skunk.*
 import skunk.codec.all.*
 import skunk.implicits.*
+import org.typelevel.twiddles.syntax.*
 
 object Statement:
   extension (data: Todo.Data.type)
     def codec: Codec[Todo.Data] =
-      (text ~ timestamp).gimap[Todo.Data]
+      (text *: timestamp).to[Todo.Data]
 
   extension (existing: Todo.Existing.type)
     def codec: Codec[Todo.Existing[UUID]] =
-      (uuid ~ Todo.Data.codec).gimap[Todo.Existing[UUID]]
+      (uuid *: Todo.Data.codec).to[Todo.Existing[UUID]]
 
   object Insert:
     val one: Query[Todo.Data, Todo.Existing[UUID]] =
@@ -60,8 +61,8 @@ object Statement:
                WHERE id = $uuid
            """.command.contramap(toTwiddle)
 
-    private def toTwiddle(e: Todo.Existing[UUID]): String ~ LocalDateTime ~ UUID =
-      e.data.description ~ e.data.deadline ~ e.id
+    private def toTwiddle(e: Todo.Existing[UUID]): (String, LocalDateTime, UUID) =
+      (e.data.description, e.data.deadline, e.id)
 
   object Select:
     val all: Query[Void, Todo.Existing[UUID]] =

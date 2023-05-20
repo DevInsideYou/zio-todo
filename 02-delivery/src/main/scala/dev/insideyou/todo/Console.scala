@@ -10,7 +10,7 @@ trait Console[-R, +E]:
 
 object Console:
   lazy val make: UIO[Console[Any, Nothing]] =
-    ZIO.succeed {
+    ZIO.succeed:
       new:
         override def getStrLnWithPrompt(prompt: String): UIO[String] =
           ZIO.succeed(scala.io.StdIn.readLine(prompt))
@@ -20,4 +20,3 @@ object Console:
 
         override def putErrLn(line: String): UIO[Unit] =
           ZIO.succeed(scala.Console.err.println(line))
-    }

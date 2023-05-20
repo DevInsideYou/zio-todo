@@ -1,8 +1,8 @@
 import Dependencies.{ io, _ }
-import Util._
+import MyUtil._
 
 ThisBuild / organization := "dev.insideyou"
-ThisBuild / scalaVersion := "3.1.1"
+ThisBuild / scalaVersion := "3.3.0"
 
 lazy val `todo` =
   project
@@ -57,7 +57,7 @@ lazy val `delivery-http-http4s` =
     .settings(
       libraryDependencies ++= Seq(
         io.circe.`circe-generic`,
-        org.http4s.`http4s-blaze-server`,
+        org.http4s.`http4s-ember-server`,
         org.http4s.`http4s-circe`,
         org.http4s.`http4s-dsl`,
         org.slf4j.`slf4j-simple`,

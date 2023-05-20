@@ -21,28 +21,22 @@ trait Boundary[-R, +E, TodoId]:
   def deleteAll: ZIO[R, E, Unit]
 
 object Boundary:
-  def make[R, TodoId](
-      gate: Gate[R, Throwable, TodoId]
-    ): Boundary[R, Throwable, TodoId] =
+  def make[R, TodoId](gate: Gate[R, Throwable, TodoId]): Boundary[R, Throwable, TodoId] =
     new:
       override def createOne(todo: Todo.Data): RIO[R, Todo.Existing[TodoId]] =
         createMany(Vector(todo)).map(_.head)
 
       override def createMany(todos: Vector[Todo.Data]): RIO[R, Vector[Todo.Existing[TodoId]]] =
-        gate.createMany(
-          todos.map { todo =>
+        gate.createMany:
+          todos.map: todo =>
             todo.withUpdatedDescription(todo.description.trim.nn)
-          }
-        )
 
       override def updateMany(
-          todos: Vector[Todo.Existing[TodoId]]
-        ): RIO[R, Vector[Todo.Existing[TodoId]]] =
-        gate.updateMany(
-          todos.map { todo =>
+        todos: Vector[Todo.Existing[TodoId]]
+      ): RIO[R, Vector[Todo.Existing[TodoId]]] =
+        gate.updateMany:
+          todos.map: todo =>
             todo.withUpdatedDescription(todo.description.trim.nn)
-          }
-        )
 
       override def readOneById(id: TodoId): RIO[R, Option[Todo.Existing[TodoId]]] =
         readManyById(Vector(id)).map(_.headOption)
@@ -51,8 +45,8 @@ object Boundary:
         gate.readManyById(ids)
 
       override def readManyByDescription(
-          description: String
-        ): RIO[R, Vector[Todo.Existing[TodoId]]] =
+        description: String
+      ): RIO[R, Vector[Todo.Existing[TodoId]]] =
         if description.isEmpty then ZIO.succeed(Vector.empty)
         else gate.readManyByDescription(description.trim.nn)
 

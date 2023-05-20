@@ -1,12 +1,12 @@
 package dev.insideyou
 package todo
 
-import zio.*
+import zio.{ Console as _, Random as _, * }
 
 object Program:
   lazy val make: UIO[Unit] =
     for
-      (console, random) <- Console.make.zipPar(Random.make)
+      console -> random <- Console.make.zipPar(Random.make)
       controller <- crud.DependencyGraph.make(Pattern, console, random)
       _ <- controller.program
     yield ()

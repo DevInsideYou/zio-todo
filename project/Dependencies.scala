@@ -13,10 +13,10 @@ object Dependencies {
   object dev {
     object zio {
       val zio =
-        "dev.zio" %% "zio" % "1.0.13"
+        "dev.zio" %% "zio" % "2.0.14"
 
       val `zio-interop-cats` =
-        "dev.zio" %% "zio-interop-cats" % "3.2.9.1"
+        "dev.zio" %% "zio-interop-cats" % "23.0.0.6"
     }
   }
 
@@ -26,14 +26,14 @@ object Dependencies {
         dependency("generic")
 
       private def dependency(artifact: String): ModuleID =
-        "io.circe" %% s"circe-$artifact" % "0.14.1"
+        "io.circe" %% s"circe-$artifact" % "0.14.5"
     }
   }
 
   object org {
     object http4s {
-      val `http4s-blaze-server` =
-        dependency("blaze-server")
+      val `http4s-ember-server` =
+        dependency("ember-server")
 
       val `http4s-circe` =
         dependency("circe")
@@ -42,17 +42,17 @@ object Dependencies {
         dependency("dsl")
 
       private def dependency(artifact: String): ModuleID =
-        "org.http4s" %% s"http4s-$artifact" % "1.0.0-M32"
+        "org.http4s" %% s"http4s-$artifact" % "1.0.0-M39"
     }
 
     object scalacheck {
       val scalacheck =
-        "org.scalacheck" %% "scalacheck" % "1.15.4"
+        "org.scalacheck" %% "scalacheck" % "1.17.0"
     }
 
     object scalatest {
       val scalatest =
-        "org.scalatest" %% "scalatest" % "3.2.11"
+        "org.scalatest" %% "scalatest" % "3.2.16"
     }
 
     object scalatestplus {
@@ -62,20 +62,20 @@ object Dependencies {
 
     object slf4j {
       val `slf4j-simple` =
-        "org.slf4j" % "slf4j-simple" % "1.7.36"
+        "org.slf4j" % "slf4j-simple" % "2.0.7"
     }
 
     object tpolecat {
       val `skunk-core` =
-        "org.tpolecat" %% "skunk-core" % "0.3.1"
+        "org.tpolecat" %% "skunk-core" % "0.6.0"
     }
 
     object typelevel {
       val `cats-core` =
-        "org.typelevel" %% "cats-core" % "2.7.0"
+        "org.typelevel" %% "cats-core" % "2.9.0"
 
       val `discipline-scalatest` =
-        "org.typelevel" %% "discipline-scalatest" % "2.1.5"
+        "org.typelevel" %% "discipline-scalatest" % "2.2.0"
     }
   }
 }

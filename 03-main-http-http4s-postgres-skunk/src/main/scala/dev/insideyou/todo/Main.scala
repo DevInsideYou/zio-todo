@@ -3,6 +3,6 @@ package todo
 
 import zio.*
 
-object Main extends App:
-  override def run(args: List[String]): URIO[ZEnv, ExitCode] =
-    Program.make.exitCode
+object Main extends ZIOAppDefault:
+  override lazy val run =
+    Program.make

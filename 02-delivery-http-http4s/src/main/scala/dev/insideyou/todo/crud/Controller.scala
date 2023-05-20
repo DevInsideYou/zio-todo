@@ -14,16 +14,16 @@ import zio.*
 
 object Controller:
   def make[TodoId](
-      pattern: DateTimeFormatter,
-      boundary: Boundary[ZEnv, Throwable, TodoId],
-    )(using
-      parse: Parse[String, TodoId]
-    ): UIO[Controller] =
-    ZIO.succeed {
+    pattern: DateTimeFormatter,
+    boundary: Boundary[ZEnv, Throwable, TodoId],
+  )(using
+    parse: Parse[String, TodoId]
+  ): UIO[Controller] =
+    ZIO.succeed:
       new Controller with Http4sDsl[Z]:
         override lazy val routes: HttpRoutes[Z] =
-          Router {
-            "todos" -> HttpRoutes.of {
+          Router:
+            "todos" -> HttpRoutes.of:
               case r @ POST -> Root => r.as[request.Todo.Create].flatMap(create)
               case r @ PUT -> Root / id => r.as[request.Todo.Update].flatMap(update(id))
 
@@ -33,25 +33,22 @@ object Controller:
 
               case DELETE -> Root => deleteAll
               case DELETE -> Root / id => delete(id)
-            }
-          }
 
         object Description extends QueryParamDecoderMatcher[String]("description")
 
         private def create(payload: request.Todo.Create): Z[ZResponse] =
-          withDeadlinePrompt(payload.deadline) { deadline =>
+          withDeadlinePrompt(payload.deadline): deadline =>
             boundary
               .createOne(Todo.Data(payload.description, deadline))
               .map(response.Todo(pattern))
               .map(_.asJson)
               .flatMap(Created(_))
-          }
 
         private def withDeadlinePrompt(
-            deadline: String
-          )(
-            onSuccess: LocalDateTime => Z[ZResponse]
-          ): Z[ZResponse] =
+          deadline: String
+        )(
+          onSuccess: LocalDateTime => Z[ZResponse]
+        ): Z[ZResponse] =
           toLocalDateTime(deadline).fold(BadRequest(_), onSuccess)
 
         private def toLocalDateTime(input: String): Either[String, LocalDateTime] =
@@ -63,43 +60,37 @@ object Controller:
 
           Either
             .catchNonFatal(LocalDateTime.parse(trimmedInput, formatter))
-            .leftMap { _ =>
+            .leftMap: _ =>
               s"$trimmedInput does not match the required format $DeadlinePromptPattern."
-            }
 
         private def update(id: String): request.Todo.Update => Z[ZResponse] =
           _.fold(updateDescription(id), updateDeadline(id), updateAllFields(id))
 
         private def updateDescription(id: String)(description: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withReadOne(id): todo =>
               boundary
                 .updateOne(todo.withUpdatedDescription(description))
                 .map(response.Todo(pattern))
                 .map(_.asJson)
                 .flatMap(Ok(_))
-            }
-          }
 
         private def updateDeadline(id: String)(deadline: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withDeadlinePrompt(deadline) { deadline =>
-              withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withDeadlinePrompt(deadline): deadline =>
+              withReadOne(id): todo =>
                 boundary
                   .updateOne(todo.withUpdatedDeadline(deadline))
                   .map(response.Todo(pattern))
                   .map(_.asJson)
                   .flatMap(Ok(_))
-              }
-            }
-          }
 
         private def updateAllFields(
-            id: String
-          )(
-            description: String,
-            deadline: String,
-          ): Z[ZResponse] =
+          id: String
+        )(
+          description: String,
+          deadline: String,
+        ): Z[ZResponse] =
           (
             toId(id).toEitherNec,
             toLocalDateTime(deadline).toEitherNec,
@@ -111,57 +102,53 @@ object Controller:
             )
 
         private def happyPath(
-            description: String
-          )(
-            id: TodoId,
-            deadline: LocalDateTime,
-          ): Z[ZResponse] =
-          withReadOne(id) { todo =>
+          description: String
+        )(
+          id: TodoId,
+          deadline: LocalDateTime,
+        ): Z[ZResponse] =
+          withReadOne(id): todo =>
             boundary
-              .updateOne(
+              .updateOne:
                 todo
                   .withUpdatedDescription(description)
                   .withUpdatedDeadline(deadline)
-              )
               .map(response.Todo(pattern))
               .map(_.asJson)
               .flatMap(Ok(_))
-          }
 
         private lazy val showAll: Z[ZResponse] =
-          boundary.readAll.flatMap { todos =>
-            todos
-              .sortBy(_.deadline)
-              .map(response.Todo(pattern))
-              .asJson
-              .pipe(Ok(_))
-          }
+          boundary
+            .readAll
+            .flatMap: todos =>
+              todos
+                .sortBy(_.deadline)
+                .map(response.Todo(pattern))
+                .asJson
+                .pipe(Ok(_))
 
         private def searchById(id: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withReadOne(id): todo =>
               todo
                 .pipe(response.Todo(pattern))
                 .pipe(_.asJson)
                 .pipe(Ok(_))
-            }
-          }
 
         private def searchByDescription(description: String): Z[ZResponse] =
-          boundary.readManyByDescription(description).flatMap { todos =>
-            todos
-              .map(response.Todo(pattern))
-              .asJson
-              .pipe(Ok(_))
-          }
+          boundary
+            .readManyByDescription(description)
+            .flatMap: todos =>
+              todos
+                .map(response.Todo(pattern))
+                .asJson
+                .pipe(Ok(_))
 
         private def delete(id: String): Z[ZResponse] =
-          withIdPrompt(id) { id =>
-            withReadOne(id) { todo =>
+          withIdPrompt(id): id =>
+            withReadOne(id): todo =>
               boundary.deleteOne(todo) >>
                 NoContent()
-            }
-          }
 
         private def withIdPrompt(id: String)(onValidId: TodoId => Z[ZResponse]): Z[ZResponse] =
           toId(id).fold(BadRequest(_), onValidId)
@@ -170,10 +157,10 @@ object Controller:
           parse(userInput).leftMap(_.getMessage)
 
         private def withReadOne(
-            id: TodoId
-          )(
-            onFound: Todo.Existing[TodoId] => Z[ZResponse]
-          ): Z[ZResponse] =
+          id: TodoId
+        )(
+          onFound: Todo.Existing[TodoId] => Z[ZResponse]
+        ): Z[ZResponse] =
           boundary
             .readOneById(id)
             .flatMap(_.fold(displayNoTodosFoundMessage)(onFound))
@@ -183,7 +170,6 @@ object Controller:
 
         private lazy val deleteAll: Z[ZResponse] =
           boundary.deleteAll >> NoContent()
-    }
 
   object request:
     object Todo:
@@ -202,10 +188,10 @@ object Controller:
         case AllFields(description: String, deadline: String)
 
         final def fold[B](
-            ifDescription: String => B,
-            ifDeadline: String => B,
-            ifAllFields: (String, String) => B,
-          ): B =
+          ifDescription: String => B,
+          ifDeadline: String => B,
+          ifAllFields: (String, String) => B,
+        ): B =
           this match
             case Description(description) => ifDescription(description)
             case Deadline(deadline) => ifDeadline(deadline)

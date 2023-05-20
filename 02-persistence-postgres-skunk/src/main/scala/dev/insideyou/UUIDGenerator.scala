@@ -7,8 +7,7 @@ trait UUIDGenerator[-R, +E]:
 
 object UUIDGenerator:
   lazy val make: UIO[UUIDGenerator[Any, Nothing]] =
-    ZIO.succeed {
+    ZIO.succeed:
       new:
         override lazy val genUUID: UIO[UUID] =
           ZIO.succeed(UUID.randomUUID())
-    }

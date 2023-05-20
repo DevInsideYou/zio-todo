@@ -6,12 +6,13 @@ import zio.*
 
 object DependencyGraph:
   def make(
-      pattern: DateTimeFormatter,
-      resource: RManaged[ZEnv, skunk.Session[Z]],
-    ): UIO[Controller] =
-    PostgresGate.make(resource).flatMap { gate =>
-      Controller.make(
-        pattern = pattern,
-        boundary = Boundary.make(gate),
-      )
-    }
+    pattern: DateTimeFormatter,
+    session: skunk.Session[Z],
+  ): UIO[Controller] =
+    PostgresGate
+      .make(session)
+      .flatMap: gate =>
+        Controller.make(
+          pattern = pattern,
+          boundary = Boundary.make(gate),
+        )

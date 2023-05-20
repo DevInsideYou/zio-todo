@@ -1,4 +1,4 @@
-import Util._
+import MyUtil._
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -14,7 +14,7 @@ Test / parallelExecution := false
 Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oSD")
 Test / turbo := true
 
-ThisBuild / autoStartServer := false
+ThisBuild / autoStartServer := insideCI.value
 ThisBuild / includePluginResolvers := true
 ThisBuild / turbo := true
 ThisBuild / useSuperShell := false

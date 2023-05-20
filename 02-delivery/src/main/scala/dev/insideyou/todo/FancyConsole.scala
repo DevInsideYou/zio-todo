@@ -1,7 +1,7 @@
 package dev.insideyou
 package todo
 
-import zio.*
+import zio.{ Console as _, * }
 
 trait FancyConsole[-R, +E]:
   def getStrLnTrimmedWithPrompt(prompt: String): ZIO[R, E, String]

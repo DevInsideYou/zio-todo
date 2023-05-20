@@ -5,11 +5,7 @@ object Program:
   lazy val make: Z[Unit] =
     for
       controller <- crud.DependencyGraph.make(Pattern)
-      server <- Server.make {
-        HttpApp.make(
-          controller
-        )
-      }
+      server <- Server.make(HttpApp.make(controller))
       _ <- server.serve
     yield ()
 
