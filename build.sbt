@@ -93,6 +93,7 @@ lazy val main =
 lazy val `main-http-http4s` =
   project
     .in(file("03-main-http-http4s"))
+    .enablePlugins(JavaAppPackaging)
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(persistence % Cctt)
     .settings(commonSettings)
@@ -108,6 +109,7 @@ lazy val `main-postgres-skunk` =
 lazy val `main-http-http4s-postgres-skunk` =
   project
     .in(file("03-main-http-http4s-postgres-skunk"))
+    .enablePlugins(JavaAppPackaging)
     .dependsOn(`delivery-http-http4s` % Cctt)
     .dependsOn(`persistence-postgres-skunk` % Cctt)
     .settings(commonSettings)

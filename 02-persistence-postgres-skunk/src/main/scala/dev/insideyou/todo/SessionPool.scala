@@ -15,11 +15,11 @@ object SessionPool:
 
     Session
       .pooled[Z](
-        host = "localhost",
-        port = 5432,
-        user = "user",
-        password = "password".some,
-        database = "todo",
+        host = sys.env.getOrElse("POSTGRES_HOST", "localhost"),
+        port = sys.env.getOrElse("POSTGRES_PORT", "5432").toInt,
+        user = sys.env.getOrElse("POSTGRES_USER", "user"),
+        password = sys.env.getOrElse("POSTGRES_PASSWORD", "password").some,
+        database = sys.env.getOrElse("POSTGRES_DATABASE", "todo"),
         max = 10,
         debug = false,
       )
