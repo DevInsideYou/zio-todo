@@ -28,7 +28,7 @@ object Controller:
               case r @ PUT -> Root / id => r.as[request.Todo.Update].flatMap(update(id))
 
               case GET -> Root :? Description(d) => searchByDescription(d)
-              case GET -> Root => showAll
+              case GET -> Root => Created("some change")
               case GET -> Root / id => searchById(id)
 
               case DELETE -> Root => deleteAll
@@ -117,6 +117,7 @@ object Controller:
               .map(_.asJson)
               .flatMap(Ok(_))
 
+        @annotation.nowarn
         private lazy val showAll: Z[ZResponse] =
           boundary
             .readAll
